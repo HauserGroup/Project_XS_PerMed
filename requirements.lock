@@ -158,6 +158,9 @@ nbformat==5.10.4
     # via nbconvert
 nest-asyncio==1.6.0
     # via ipykernel
+networkx==3.4.2
+    # via project-permed
+    # via python-louvain
 notebook==7.2.2
     # via project-permed
 notebook-shim==0.2.4
@@ -171,6 +174,7 @@ numpy==2.1.1
     # via pandas
     # via patsy
     # via project-permed
+    # via python-louvain
     # via scikit-learn
     # via scipy
     # via seaborn
@@ -227,6 +231,8 @@ python-dateutil==2.9.0.post0
     # via pandas
 python-json-logger==2.0.7
     # via jupyter-events
+python-louvain==0.16
+    # via project-permed
 pytz==2024.1
     # via pandas
 pyyaml==6.0.2
