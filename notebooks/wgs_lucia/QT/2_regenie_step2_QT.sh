@@ -22,13 +22,14 @@ run_regenie_step2="regenie --step 2 \
   --bgen "${wgs_dir}/OPRM1.bgen" \
   --sample "${wgs_dir}/OPRM1.sample" \
   --ref-first \
-  --phenoFile "${data_file_dir}/phenotypes/morphine.phenotype.QT.tsv" \
+  --phenoFile "${data_file_dir}/phenotypes/morphine_codeine.phenotype.QT.tsv" \
   --covarFile "${regenie_file_dir}/covariates.tsv" \
   --pred "${regenie_file_dir}/phenos.QT.step1_pred_new.list" \
   --bsize 200 \
   --set-list "${wgs_dir}/OPRM1.good_setlist" \
   --anno-file "${wgs_dir}/OPRM1.annotations_2" \
   --mask-def "${wgs_dir}/OPRM1_4.mask" \
+  --aaf-bins 0.1
   --verbose
 "
 

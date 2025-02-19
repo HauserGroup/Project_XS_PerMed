@@ -15,7 +15,7 @@ dir_L="WGS_Lucia/Data/Input_regenie"
 run_regenie_step1="regenie --step 1 \
  --out phenos.QT.step1 \
  --bed ukb_allChrs \
- --phenoFile ${data_file_dir}/phenotypes/morphine.phenotype.QT.tsv --covarFile ${regenie_file_dir_L}/covariates.tsv \
+ --phenoFile ${data_file_dir}/phenotypes/morphine_codeine.phenotype.QT.tsv --covarFile ${regenie_file_dir_L}/covariates.tsv \
  --extract ${regenie_file_dir_J}/WGS_qc_pass.snplist --keep ${regenie_file_dir_J}/WGS_qc_pass.id \
  --bsize 1000 \
  --lowmem --lowmem-prefix tmp_preds \
