@@ -29,7 +29,8 @@ run_regenie_step2="regenie --step 2 \
   --set-list "${wgs_dir}/OPRM1.good_setlist" \
   --anno-file "${wgs_dir}/OPRM1.annotations_2" \
   --mask-def "${wgs_dir}/OPRM1_4.mask" \
-  --aaf-bins 0.1
+  --aaf-bins 0.1 \
+  --vc-tests skato,acato-full \
   --verbose
 "
 
