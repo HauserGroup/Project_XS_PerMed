@@ -1,0 +1,8 @@
+##MASKS=<No_efficacy="G255E,R181C,A104D,N190K";Low_efficacy="C192F,S147C";No_Low_efficacy="G255E,R181C,A104D,N190K,C192F,S147C";WT_efficay="N152D,T155I";No_Low_efficacy_High_Impact_Variants="G255E,R181C,A104D,N190K,C192F,S147C,frameshift_variant,stop_gained,splice_donor_variant";No_Low_efficacy_High_Moderate_Impact_Variants="G255E,R181C,A104D,N190K,C192F,S147C,frameshift_variant,stop_gained,splice_donor_variant,missense_variant,inframe_deletion,inframe_insertion">
+CHROM GENPOS ID ALLELE0 ALLELE1 A1FREQ N TEST BETA SE CHISQ LOG10P EXTRA
+6 154010515 OPRM1.No_efficacy.0.01 ref No_efficacy.0.01 0.00246855 6279 ADD 12.5916 126.081 0.00997394 0.0360008 NA
+6 154010515 OPRM1.Low_efficacy.0.01 ref Low_efficacy.0.01 0.0136168 6279 ADD 56.5564 54.2692 1.08606 0.52674 NA
+6 154010515 OPRM1.No_Low_efficacy.0.01 ref No_Low_efficacy.0.01 0.0160854 6279 ADD 50.1484 50.08 1.00273 0.499421 NA
+6 154010515 OPRM1.No_Low_efficacy_High_Impact_Variants.0.01 ref No_Low_efficacy_High_Impact_Variants.0.01 0.0165631 6279 ADD 40.3876 49.3905 0.668665 0.383506 NA
+6 154010515 OPRM1.No_Low_efficacy_High_Moderate_Impact_Variants.singleton ref No_Low_efficacy_High_Moderate_Impact_Variants.singleton 0.00119446 6279 ADD -21.8947 180.9 0.0146487 0.0439921 NA
+6 154010515 OPRM1.No_Low_efficacy_High_Moderate_Impact_Variants.0.01 ref No_Low_efficacy_High_Moderate_Impact_Variants.0.01 0.028667 6279 ADD -26.2037 37.9897 0.475766 0.309497 NA

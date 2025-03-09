@@ -1,0 +1,81 @@
+Start time: Sat Feb  1 11:21:11 2025
+
+              |=============================|
+              |      REGENIE v3.2.6.gz      |
+              |=============================|
+
+Copyright (c) 2020-2022 Joelle Mbatchou, Andrey Ziyatdinov and Jonathan Marchini.
+Distributed under the MIT License.
+Compiled with Boost Iostream library.
+Using Intel MKL with Eigen.
+
+Log of output saved in file : phenos.QT.step2.log
+
+Options in effect:
+  --step 2 \
+  --out phenos.QT.step2 \
+  --bgen /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.bgen \
+  --sample /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.sample \
+  --ref-first \
+  --phenoFile /mnt/project/WGS_Lucia/Data/phenotypes/morphine.phenotype.QT.tsv \
+  --covarFile /mnt/project/WGS_Lucia/Data/Input_regenie/covariates.tsv \
+  --pred /mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.step1_pred_new.list \
+  --bsize 200 \
+  --set-list /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.good_setlist \
+  --anno-file /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.annotations_2 \
+  --mask-def /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1_4.mask \
+  --verbose
+
+Association testing mode (joint tests) with fast multithreading using OpenMP
+ * bgen             : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.bgen]
+   -summary : bgen file (v1.2 layout, zlib compressed) with 431455 named samples and 4756 variants with 8-bit encoding.
+   -sample file: /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.sample
+ * phenotypes       : [/mnt/project/WGS_Lucia/Data/phenotypes/morphine.phenotype.QT.tsv] n_pheno = 5
+   -number of phenotyped individuals  = 6299
+ * covariates       : [/mnt/project/WGS_Lucia/Data/Input_regenie/covariates.tsv] n_cov = 25
+   -number of individuals with covariate data = 426154
+ * number of individuals used in analysis = 6279
+ * number of observations for each trait:
+   - 'num_drug_era_id': 6279 observations
+   - 'total_exposure_counts': 6279 observations
+   - 'total_duration': 6279 observations
+   - 'cumulative_gap_days': 6279 observations
+   - 'adherence_score_omop': 4168 observations
+ * LOCO predictions : [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.step1_pred_new.list]
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.LOCO/phenos.QT.step1_1.loco] for phenotype 'num_drug_era_id'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.LOCO/phenos.QT.step1_2.loco] for phenotype 'total_exposure_counts'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.LOCO/phenos.QT.step1_3.loco] for phenotype 'total_duration'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.LOCO/phenos.QT.step1_4.loco] for phenotype 'cumulative_gap_days'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.LOCO/phenos.QT.step1_5.loco] for phenotype 'adherence_score_omop'
+   -residualizing and scaling phenotypes...done (25ms) 
+ * annotations      : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.annotations_2] 
+   +number of annotations categories = 23
+ * masks            : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1_4.mask] n_masks = 6
+ * aaf cutoffs      : [ 1 : 0.01 ] + singletons
+ * set file         : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.good_setlist] n_sets = 1
+WARNING: Detected 1 sets with variants not in genetic data or annotation files.
+ * # threads        : [15]
+ * # tested sets    : [1]
+ * max block size   : [200]
+ * rule used to build masks : max
+ * approximate memory usage : 2GB
+ * using minimum MAC of 5 (masks with lower MAC are ignored)
+
+Chromosome 6 [1 sets in total]
+   -reading loco predictions for the chromosome...done (1064ms) 
+ set [1/1] : OPRM1 - 221 variants...2 chunks
+     -reading in genotypes and building masks...WARNING: 6/12 masks fail MAC filter and will be skipped...done (343ms) 
+     -computing association tests...done (36ms) 
+
+Association results stored separately for each trait in files : 
+* [phenos.QT.step2_num_drug_era_id.regenie]
+* [phenos.QT.step2_total_exposure_counts.regenie]
+* [phenos.QT.step2_total_duration.regenie]
+* [phenos.QT.step2_cumulative_gap_days.regenie]
+* [phenos.QT.step2_adherence_score_omop.regenie]
+
+Number of ignored tests due to low MAC : 0
+
+Elapsed time : 18.1259s
+End time: Sat Feb  1 11:21:29 2025
+

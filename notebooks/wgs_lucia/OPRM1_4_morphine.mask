@@ -1,0 +1,6 @@
+No_efficacy	G255E,R181C,A104D,N190K
+Low_efficacy	C192F,S147C
+No_Low_efficacy	G255E,R181C,A104D,N190K,C192F,S147C
+WT_efficay	N152D,T155I
+No_Low_efficacy_High_Impact_Variants	G255E,R181C,A104D,N190K,C192F,S147C,frameshift_variant,stop_gained,splice_donor_variant
+No_Low_efficacy_High_Moderate_Impact_Variants	G255E,R181C,A104D,N190K,C192F,S147C,frameshift_variant,stop_gained,splice_donor_variant,missense_variant,inframe_deletion,inframe_insertion

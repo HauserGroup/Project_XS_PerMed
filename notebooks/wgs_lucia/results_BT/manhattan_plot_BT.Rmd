@@ -1,0 +1,277 @@
+---
+title: "gwas_visualization"
+output: html_document
+date: "2025-01-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+## Both Morphine and Fentanyl Usage Phenotype
+```{r}
+gwas_both <- read.table("phenos.BT.step2_both_morphine_fentanyl.txt", header =T, as.is = T, sep ='\t')
+nrow(gwas_both)
+head(gwas_both)
+```
+
+Adding P column by inversing negativo logarithm with the base 10
+
+```{r}
+gwas_both <- gwas_both %>% mutate(P=(10^(-LOG10P)))
+
+head(gwas_both)
+```
+
+```{r}
+# Dimensions of the dataframe
+dim(gwas_both)
+```
+
+```{r}
+#Lowest P-value
+min(gwas_both$P)
+```
+
+### Generating a Q-Q plot
+
+```{r}
+qq(gwas_both$P, main = "Q-Q plot for Both Fentanyl and Morphine Usage Phenotype Genome Association")
+```
+### Plotting a Manhattan Plot
+We can  make an interactive manhattan plot making annotations
+
+```{r}
+# Load the annotation file
+annotations <- read.table("OPRM1.annotations_2", sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+colnames(annotations) <- c("ID", "Unused", "Annotation")
+
+# Define mask groups
+mask_groups <- list(
+  No_efficacy = c("G255E", "R181C", "A104D", "N190K"),
+  Low_efficacy = c("C192F", "S147C"),
+  WT_efficacy = c("N152D", "T155I"),
+  High_impact_variants = c("frameshift_variant","stop_gained","splice_donor_variant"),
+  Low_impact_variants = c("missense_variant","inframe_deletion","inframe_insertion")
+)
+
+# Add a mask column based on the annotation
+annotations <- annotations %>%
+  mutate(Mask = case_when(
+    Annotation %in% mask_groups$No_efficacy ~ "No_efficacy",
+    Annotation %in% mask_groups$Low_efficacy ~ "Low_efficacy",
+    Annotation %in% mask_groups$WT_efficacy ~ "WT_efficacy",
+    Annotation %in% mask_groups$High_impact_variants ~ "High_impact_variants",
+    Annotation %in% mask_groups$Low_impact_variants ~ "Low_impact_variants",
+    TRUE ~ "Other"
+  ))
+
+# Merge the GWAS data with the annotations
+gwas_both <- gwas_both %>%
+  left_join(annotations, by = "ID")
+
+# Map masks to colors
+mask_colors <- c(
+  "No_efficacy" = "black",
+  "Low_efficacy" = "orange",
+  "WT_efficacy" = "green",
+  "High_impact_variants" = "yellow",
+  "Low_impact_variants" = "purple",
+  "Other" = "blue"
+)
+
+# Add a color column to the data based on the mask
+gwas_both <- gwas_both %>%
+  mutate(Color = mask_colors[Mask])
+# Calculate Bonferroni threshold for 1404 tests (looking the dimensions)
+bonferroni_threshold <- -log10(0.05 / 1404)
+
+```
+
+```{r}
+print(gwas_both)
+```
+
+```{r}
+# Generate Manhattan plot
+# Ensure Mask is a factor for correct legend mapping
+gwas_both$Mask <- as.factor(gwas_both$Mask)
+
+# Create Manhattan plot using ggplot2
+manhattan_plot <- ggplot(gwas_both, aes(x = GENPOS, y = LOG10P, color = Mask)) +
+  geom_point(alpha = 0.8, size = 2) +  # Points for variants
+  geom_hline(yintercept = bonferroni_threshold, linetype = "dashed", color = "red") +  # Genome-wide threshold
+  geom_text(
+    data = gwas_both %>% filter(LOG10P > bonferroni_threshold), 
+    aes(x = GENPOS, y = LOG10P, label = Annotation),  # Ensure label is only applied here
+    vjust = -1, hjust = 0.5, size = 3, fontface = "bold",
+    check_overlap = TRUE, show.legend = FALSE  # Hide from legend
+) + # Annotate significant variants
+  scale_color_manual(values = setNames(unique(gwas_both$Color), unique(gwas_both$Mask))) +  # Map Colors to Mask
+  labs(
+    title = "Manhattan Plot Both morphine and fentanyl users BT Phenotype",
+    x = "Genomic Position (Mb)",
+    y = "-log10(P-value)",
+  ) +
+  theme_minimal() 
+
+# Print plot
+print(manhattan_plot)
+```
+
+Now let's do the same for the the other two phenotypes
+
+## Only Morphine phenotype
+
+```{r}
+gwas_morphine <- read.table("phenos.BT.step2_only_morphine.txt", header =T, as.is = T, sep ='\t')
+nrow(gwas_morphine)
+head(gwas_morphine)
+```
+
+Adding P column by inversing negativo logarithm with the base 10
+
+```{r}
+gwas_morphine <- gwas_morphine %>% mutate(P=(10^(-LOG10P)))
+
+head(gwas_morphine)
+```
+
+```{r}
+# Dimensions of the dataframe
+dim(gwas_morphine)
+```
+
+```{r}
+#Lowest P-value
+min(gwas_morphine$P)
+```
+
+### Generating a Q-Q plot
+
+```{r}
+qq(gwas_morphine$P, main = "Q-Q plot for Only Morphine Usage Phenotype Genome Association")
+```
+### Plotting a Manhattan Plot
+```{r}
+# Merge the GWAS data with the annotations
+gwas_morphine <- gwas_morphine %>%
+  left_join(annotations, by = "ID")
+
+# Add a color column to the data based on the mask
+gwas_morphine <- gwas_morphine %>%
+  mutate(Color = mask_colors[Mask])
+# Calculate Bonferroni threshold for 1404 tests (looking the dimensions)
+bonferroni_threshold <- -log10(0.05 / 1404)
+```
+
+```{r}
+print(gwas_morphine)
+```
+```{r}
+# Generate Manhattan plot
+# Ensure Mask is a factor for correct legend mapping
+gwas_morphine$Mask <- as.factor(gwas_morphine$Mask)
+
+# Create Manhattan plot using ggplot2
+manhattan_plot <- ggplot(gwas_morphine, aes(x = GENPOS, y = LOG10P, color = Mask)) +
+  geom_point(alpha = 0.8, size = 2) +  # Points for variants
+  geom_hline(yintercept = bonferroni_threshold, linetype = "dashed", color = "red") +  # Genome-wide threshold
+  geom_text(
+    data = gwas_morphine %>% filter(LOG10P > bonferroni_threshold), 
+    aes(x = GENPOS, y = LOG10P, label = Annotation),  # Ensure label is only applied here
+    vjust = -1, hjust = 0.5, size = 3, fontface = "bold",
+    check_overlap = TRUE, show.legend = FALSE  # Hide from legend
+) + # Annotate significant variants
+  scale_color_manual(values = setNames(unique(gwas_morphine$Color), unique(gwas_morphine$Mask))) +  # Map Colors to Mask
+  labs(
+    title = "Manhattan Plot Only morphine users BT Phenotype",
+    x = "Genomic Position (Mb)",
+    y = "-log10(P-value)",
+  ) +
+  theme_minimal() 
+
+# Print plot
+print(manhattan_plot)
+```
+
+## Only Fentanyl phenotype
+
+```{r}
+gwas_fentanyl <- read.table("phenos.BT.step2_only_fentanyl.txt", header =T, as.is = T, sep ='\t')
+head(gwas_fentanyl)
+```
+
+Adding P column by inversing negativo logarithm with the base 10
+
+```{r}
+gwas_fentanyl <- gwas_fentanyl %>% mutate(P=(10^(-LOG10P)))
+
+head(gwas_fentanyl)
+```
+
+```{r}
+# Dimensions of the dataframe
+dim(gwas_fentanyl)
+```
+
+```{r}
+#Lowest P-value
+min(gwas_fentanyl$P)
+```
+
+### Generating a Q-Q plot
+
+```{r}
+qq(gwas_fentanyl$P, main = "Q-Q plot for Only Fentanyl Usage Phenotype Genome Association")
+```
+### Plotting a Manhattan Plot
+
+```{r}
+# Merge the GWAS data with the annotations
+gwas_fentanyl <- gwas_fentanyl %>%
+  left_join(annotations, by = "ID")
+
+# Add a color column to the data based on the mask
+gwas_fentanyl<- gwas_fentanyl %>%
+  mutate(Color = mask_colors[Mask])
+# Calculate Bonferroni threshold for 1404 tests (looking the dimensions)
+bonferroni_threshold <- -log10(0.05 / 1404)
+```
+
+```{r}
+print(gwas_fentanyl)
+```
+
+```{r}
+# Generate Manhattan plot
+# Ensure Mask is a factor for correct legend mapping
+gwas_fentanyl$Mask <- as.factor(gwas_fentanyl$Mask)
+
+# Create Manhattan plot using ggplot2
+manhattan_plot <- ggplot(gwas_fentanyl, aes(x = GENPOS, y = LOG10P, color = Mask)) +
+  geom_point(alpha = 0.8, size = 2) +  # Points for variants
+  geom_hline(yintercept = bonferroni_threshold, linetype = "dashed", color = "red") +  # Genome-wide threshold
+  geom_text(
+    data = gwas_fentanyl %>% filter(LOG10P > bonferroni_threshold), 
+    aes(x = GENPOS, y = LOG10P, label = Annotation),  # Ensure label is only applied here
+    vjust = -1, hjust = 0.5, size = 3, fontface = "bold",
+    check_overlap = TRUE, show.legend = FALSE  # Hide from legend
+) + # Annotate significant variants
+  scale_color_manual(values = setNames(unique(gwas_fentanyl$Color), unique(gwas_fentanyl$Mask))) +  # Map Colors to Mask
+  labs(
+    title = "Manhattan Plot Only fentanyl users BT Phenotype",
+    x = "Genomic Position (Mb)",
+    y = "-log10(P-value)",
+  ) +
+  theme_minimal() 
+
+# Print plot
+print(manhattan_plot)
+```

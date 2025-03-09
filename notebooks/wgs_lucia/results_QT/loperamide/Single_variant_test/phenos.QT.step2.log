@@ -1,0 +1,92 @@
+Start time: Sat Feb  1 14:14:41 2025
+
+              |=============================|
+              |      REGENIE v3.2.6.gz      |
+              |=============================|
+
+Copyright (c) 2020-2022 Joelle Mbatchou, Andrey Ziyatdinov and Jonathan Marchini.
+Distributed under the MIT License.
+Compiled with Boost Iostream library.
+Using Intel MKL with Eigen.
+
+Log of output saved in file : phenos.QT.step2.log
+
+Options in effect:
+  --step 2 \
+  --out phenos.QT.step2 \
+  --bgen /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.bgen \
+  --sample /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.sample \
+  --ref-first \
+  --phenoFile /mnt/project/WGS_Lucia/Data/phenotypes/loperamide.phenotype.QT.tsv \
+  --covarFile /mnt/project/WGS_Lucia/Data/Input_regenie/covariates.tsv \
+  --pred /mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.step1_pred_new.list \
+  --bsize 200 \
+  --verbose
+
+Association testing mode with fast multithreading using OpenMP
+ * bgen             : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.bgen]
+   -summary : bgen file (v1.2 layout, zlib compressed) with 431455 named samples and 4756 variants with 8-bit encoding.
+   -sample file: /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.sample
+ * phenotypes       : [/mnt/project/WGS_Lucia/Data/phenotypes/loperamide.phenotype.QT.tsv] n_pheno = 5
+   -number of phenotyped individuals  = 13318
+ * covariates       : [/mnt/project/WGS_Lucia/Data/Input_regenie/covariates.tsv] n_cov = 25
+   -number of individuals with covariate data = 426154
+ * number of individuals used in analysis = 13263
+ * number of observations for each trait:
+   - 'num_drug_era_id': 13263 observations
+   - 'total_exposure_counts': 13263 observations
+   - 'total_duration': 13263 observations
+   - 'cumulative_gap_days': 13263 observations
+   - 'adherence_score_omop': 5025 observations
+ * LOCO predictions : [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.step1_pred_new.list]
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.LOCO/phenos.QT.step1_1.loco] for phenotype 'num_drug_era_id'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.LOCO/phenos.QT.step1_2.loco] for phenotype 'total_exposure_counts'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.LOCO/phenos.QT.step1_3.loco] for phenotype 'total_duration'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.LOCO/phenos.QT.step1_4.loco] for phenotype 'cumulative_gap_days'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.QT.LOCO/phenos.QT.step1_5.loco] for phenotype 'adherence_score_omop'
+   -residualizing and scaling phenotypes...done (22ms) 
+ * # threads        : [15]
+ * block size       : [200]
+ * # blocks         : [24]
+ * approximate memory usage : 2GB
+ * using minimum MAC of 5 (variants with lower MAC are ignored)
+
+Chromosome 6 [24 blocks in total]
+   -reading loco predictions for the chromosome...done (1271ms) 
+ block [1/24] : done (1084ms) 
+ block [2/24] : done (1084ms) 
+ block [3/24] : done (1085ms) 
+ block [4/24] : done (1075ms) 
+ block [5/24] : done (1082ms) 
+ block [6/24] : done (1043ms) 
+ block [7/24] : done (1041ms) 
+ block [8/24] : done (1046ms) 
+ block [9/24] : done (1062ms) 
+ block [10/24] : done (1063ms) 
+ block [11/24] : done (1081ms) 
+ block [12/24] : done (1071ms) 
+ block [13/24] : done (1062ms) 
+ block [14/24] : done (1044ms) 
+ block [15/24] : done (1043ms) 
+ block [16/24] : done (1079ms) 
+ block [17/24] : done (1086ms) 
+ block [18/24] : done (1051ms) 
+ block [19/24] : done (1080ms) 
+ block [20/24] : done (1086ms) 
+ block [21/24] : done (1087ms) 
+ block [22/24] : done (1079ms) 
+ block [23/24] : done (1074ms) 
+ block [24/24] : done (849ms) 
+
+Association results stored separately for each trait in files : 
+* [phenos.QT.step2_num_drug_era_id.regenie]
+* [phenos.QT.step2_total_exposure_counts.regenie]
+* [phenos.QT.step2_total_duration.regenie]
+* [phenos.QT.step2_cumulative_gap_days.regenie]
+* [phenos.QT.step2_adherence_score_omop.regenie]
+
+Number of ignored tests due to low MAC : 22591
+
+Elapsed time : 43.3454s
+End time: Sat Feb  1 14:15:24 2025
+

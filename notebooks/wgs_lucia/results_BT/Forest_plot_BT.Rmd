@@ -1,0 +1,98 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+```
+
+
+```{r}
+# Function to process each file
+process_file <- function(file_path, phenotype) {
+  df <- read.table(file_path, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+  
+  # Filter rows where ID ends with "0.01"
+  df <- df %>% filter(grepl("0.01$", ID))
+  
+  # Keep only necessary columns and add phenotype column
+  df <- df %>% 
+    select(ID, A1FREQ, N, BETA, SE, CHISQ, LOG10P) %>% 
+    mutate(Phenotype = phenotype) %>% 
+    select(Phenotype, everything())
+  
+  return(df)
+}
+
+# File paths (update these paths as necessary)
+file1 <- "phenos.BT.step2_both_morphine_fentanyl.txt"
+file2 <- "phenos.BT.step2_only_fentanyl.txt"
+file3 <- "phenos.BT.step2_only_morphine.txt"
+
+# Process each file
+phenotype1 <- process_file(file1, "Both_morphine_fentanyl")
+phenotype2 <- process_file(file2, "Only_fentanyl")
+phenotype3 <- process_file(file3, "Only_morphine")
+
+# Combine all into one data frame
+combined_df <- bind_rows(phenotype1, phenotype2, phenotype3)
+
+# Calculate p-values from log10pvalue
+combined_df <- combined_df %>% mutate(P=(10^(-LOG10P)))
+
+# Compute adjusted p-values using FDR method
+combined_df <- combined_df %>% mutate(P_adj = p.adjust(P, method = "fdr"))
+
+# Write to output file
+write.table(combined_df, "combined_phenotypes.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+
+print(combined_df)
+```
+
+
+```{r}
+# Define the desired order for ID
+id_order <- c("OPRM1.No_efficacy.0.01", "OPRM1.Low_efficacy.0.01", "OPRM1.No_Low_efficacy.0.01", "OPRM1.No_Low_efficacy_High_Impact_Variants.0.01","OPRM1.No_Low_efficacy_High_Moderate_Impact_Variants.0.01", "OPRM1.WT_efficay.0.01")
+
+# Convert ID to a factor with the specified order
+combined_df <- combined_df %>% mutate(ID = factor(ID, levels = rev(id_order), ordered = TRUE))
+
+# Calculate confidence intervals (assuming 95% CI)
+combined_df <- combined_df %>%
+  mutate(lower = BETA - 1.96 * SE,  # Lower bound
+         upper = BETA + 1.96 * SE)  # Upper bound
+
+# Create the forest plot
+forest_plot <- ggplot(combined_df, aes(x = BETA, y = ID)) +
+  geom_point(aes(color = Phenotype), size = 3) +  # Points for Beta
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2) +  # Horizontal error bars
+  facet_wrap(~ Phenotype, scales = "free_y", ncol = 1) +  # Facet by phenotype
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 10),  # Adjust y-axis text size
+    strip.text = element_text(size = 12, face = "bold")  # Adjust facet titles
+  ) +
+  labs(
+    title = "Forest Plot of Beta with Error Bars",
+    x = "Beta (Effect Size)",
+    y = "Mask"
+  ) +
+  geom_text(aes(label = sprintf("P: %.3g\nP_adj: %.3g", 10^(-LOG10P), P_adj)),
+            hjust = -0.2, size = 3)
+
+
+# Print the plot
+print(forest_plot)
+
+```
+
+```{r}
+# Save the plot
+ggsave("forest_plot_mask4.png", forest_plot, width = 20, height = 15, dpi = 300)
+```
+

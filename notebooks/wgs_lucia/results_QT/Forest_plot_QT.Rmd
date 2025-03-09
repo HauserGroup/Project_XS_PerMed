@@ -1,0 +1,164 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+```
+
+
+```{r}
+# Function to process each file
+process_file <- function(file_path, phenotype) {
+  df <- read.table(file_path, header = TRUE, sep = " ", skip = 1, stringsAsFactors = FALSE)
+  
+  # Calculate p-values from log10pvalue
+  df <- df %>% mutate(P=(10^(-LOG10P)))
+  # Filter rows where p_adj < 0.05
+  significant_results <- df %>% filter(P < 0.05)
+  # Display the results
+  if (nrow(significant_results) > 0) {
+    print(significant_results[, c("ID", "TEST","P","BETA")])
+    } else {
+      print("No significant associations")
+    }
+  
+  df <- df %>% filter(df$TEST == "ADD")
+  # Filter rows where ID ends with "all"
+  df <- df %>% filter(grepl(".all$", ID))
+  # Compute adjusted p-values using FDR method
+  df <- df %>% mutate(P_adj = p.adjust(P, method = "fdr"))
+  # Keep only necessary columns and add phenotype column
+  df <- df %>% 
+    select(ID, A1FREQ, N, BETA, SE, CHISQ, LOG10P,P,P_adj) %>% 
+    mutate(Phenotype = phenotype) %>% 
+    select(Phenotype, everything())
+  
+  return(df)
+}
+
+# File paths (update these paths as necessary)
+file1 <- "morphine_codeine/burden_test/phenos.QT.step2_total_exposure_counts.regenie"
+file2 <- "morphine_codeine/burden_test/phenos.QT.step2_total_duration.regenie"
+file3 <- "morphine_codeine/burden_test/phenos.QT.step2_num_drug_era_id.regenie"
+file4 <- "morphine_codeine/burden_test/phenos.QT.step2_cumulative_gap_days.regenie"
+```
+
+
+```{r}
+# Process each file
+phenotype1 <- process_file(file1, "Total_exposure_counts")
+```
+
+
+```{r}
+phenotype2 <- process_file(file2, "Total_duration")
+```
+
+
+```{r}
+phenotype3 <- process_file(file3, "Number_drug_eras")
+```
+
+
+```{r}
+phenotype4 <- process_file(file4, "Cumulative_gap_days")
+```
+
+
+```{r}
+# Combine all into one data frame
+combined_df <- bind_rows(phenotype1, phenotype2, phenotype3, phenotype4)
+
+# Write to output file
+write.table(combined_df, "combined_phenotypes.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+
+print(combined_df)
+
+# Define the desired order for ID
+id_order <- c("OPRM1.No_efficacy.all", "OPRM1.Low_efficacy.all", "OPRM1.No_Low_efficacy.all", "OPRM1.No_Low_efficacy_High_Impact_Variants.all","OPRM1.No_Low_efficacy_High_Moderate_Impact_Variants.all", "OPRM1.WT_efficay.all")
+
+# Convert ID to a factor with the specified order
+combined_df <- combined_df %>% mutate(ID = factor(ID, levels = rev(id_order), ordered = TRUE))
+
+# Calculate confidence intervals (assuming 95% CI)
+combined_df <- combined_df %>%
+  mutate(lower = BETA - 1.96 * SE,  # Lower bound
+         upper = BETA + 1.96 * SE)  # Upper bound
+
+# Create the forest plot
+forest_plot <- ggplot(combined_df, aes(x = BETA, y = ID)) +
+  geom_point(aes(color = Phenotype), size = 3) +  # Points for Beta
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2) +  # Horizontal error bars
+  facet_wrap(~ Phenotype, scales = "free_y", ncol = 1) +  # Facet by phenotype
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 10),  # Adjust y-axis text size
+    strip.text = element_text(size = 12, face = "bold")  # Adjust facet titles
+  ) +
+  labs(
+    title = "Forest Plot of Beta with Error Bars Qt Phenotypes Morphine+Codeine",
+    x = "Beta (Effect Size)",
+    y = "Mask"
+  ) +
+  geom_text(aes(label = sprintf("P: %.3g\nP_adj: %.3g", 10^(-LOG10P), P_adj)),
+            hjust = -0.2, size = 3)
+
+
+# Print the plot
+print(forest_plot)
+
+```
+Now I want to represent phenotype 1: total exposures alone
+```{r}
+# Calculate p-values from log10pvalue
+phenotype1 <- phenotype1 %>% mutate(P = (10^(-LOG10P)))
+
+# Compute adjusted p-values using FDR method
+phenotype1 <- phenotype1 %>% mutate(P_adj = p.adjust(P, method = "fdr"))
+
+# Convert ID to a factor with the specified order
+phenotype1 <- phenotype1 %>% mutate(ID = factor(ID, levels = rev(id_order), ordered = TRUE))
+
+# Calculate confidence intervals (assuming 95% CI)
+phenotype1 <- phenotype1 %>%
+  mutate(lower = BETA - 1.96 * SE,  # Lower bound
+         upper = BETA + 1.96 * SE)  # Upper bound
+
+# Create the forest plot with larger labels
+forest_plot <- ggplot(phenotype1, aes(x = BETA, y = ID)) +
+  geom_point(size = 4) +  # Increase point size
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.3) +  # Thicker error bars
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 14),  # Increase y-axis text size
+    axis.text.x = element_text(size = 14),  # Increase x-axis text size
+    axis.title.x = element_text(size = 16, face = "bold"),  # Increase x-axis title size
+    axis.title.y = element_text(size = 16, face = "bold"),  # Increase y-axis title size
+    plot.title = element_text(size = 18, face = "bold", hjust = 0.5),  # Bigger title
+    strip.text = element_text(size = 16, face = "bold")  # Bigger facet titles
+  ) +
+  labs(
+    title = "Forest Plot of Total Exposure Count QT Phenotype: Morphine+Codeine",
+    x = "Beta (Effect Size)",
+    y = "Mask"
+  ) +
+  geom_text(aes(label = sprintf("P: %.3g\nP_adj: %.3g", 10^(-LOG10P), P_adj)),
+            hjust = -0.2, size = 5)  # Increased annotation text size
+
+# Print the plot
+print(forest_plot)
+```
+
+
+```{r}
+# Save the plot with bigger dimensions
+ggsave("forest_plot_total_exposure_counts_morphine_codeine.png", forest_plot, 
+       width = 16, height = 12 , dpi = 300, bg = "white")
+```
+
