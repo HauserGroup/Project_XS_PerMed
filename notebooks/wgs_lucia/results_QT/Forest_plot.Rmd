@@ -43,10 +43,10 @@ process_file <- function(file_path, phenotype) {
 }
 
 # File paths (update these paths as necessary)
-file1 <- "morphine_codeine/burden_test/phenos.QT.step2_total_exposure_counts.regenie"
-file2 <- "morphine_codeine/burden_test/phenos.QT.step2_total_duration.regenie"
-file3 <- "morphine_codeine/burden_test/phenos.QT.step2_num_drug_era_id.regenie"
-file4 <- "morphine_codeine/burden_test/phenos.QT.step2_cumulative_gap_days.regenie"
+file1 <- "fentanyl/burden_test/phenos.QT.step2_total_exposure_counts.regenie"
+file2 <- "fentanyl/burden_test/phenos.QT.step2_total_duration.regenie"
+file3 <- "fentanyl/burden_test/phenos.QT.step2_num_drug_era_id.regenie"
+file4 <- "fentanyl/burden_test/phenos.QT.step2_cumulative_gap_days.regenie"
 ```
 
 
@@ -75,13 +75,10 @@ phenotype4 <- process_file(file4, "Cumulative_gap_days")
 # Combine all into one data frame
 combined_df <- bind_rows(phenotype1, phenotype2, phenotype3, phenotype4)
 
-# Write to output file
-write.table(combined_df, "combined_phenotypes.txt", sep = "\t", row.names = FALSE, quote = FALSE)
-
 print(combined_df)
 
 # Define the desired order for ID
-id_order <- c("OPRM1.No_efficacy.all", "OPRM1.Low_efficacy.all", "OPRM1.No_Low_efficacy.all", "OPRM1.No_Low_efficacy_High_Impact_Variants.all","OPRM1.No_Low_efficacy_High_Moderate_Impact_Variants.all", "OPRM1.WT_efficay.all")
+id_order <- c("OPRM1.No_efficacy.all","OPRM1.Reduced_efficacy.all", "OPRM1.No_Reduced_efficacy.all", "OPRM1.No_Reduced_efficacy_High_Impact_Variants.all","OPRM1.No_Reduced_efficacy_High_Moderate_Impact_Variants.all", "OPRM1.WT_efficacy.all")
 
 # Convert ID to a factor with the specified order
 combined_df <- combined_df %>% mutate(ID = factor(ID, levels = rev(id_order), ordered = TRUE))
@@ -102,7 +99,7 @@ forest_plot <- ggplot(combined_df, aes(x = BETA, y = ID)) +
     strip.text = element_text(size = 12, face = "bold")  # Adjust facet titles
   ) +
   labs(
-    title = "Forest Plot of Beta with Error Bars Qt Phenotypes Morphine+Codeine",
+    title = "Forest Plot of Beta with Error Bars Qt Phenotypes: Fentanyl",
     x = "Beta (Effect Size)",
     y = "Mask"
   ) +
@@ -114,19 +111,25 @@ forest_plot <- ggplot(combined_df, aes(x = BETA, y = ID)) +
 print(forest_plot)
 
 ```
-Now I want to represent phenotype 1: total exposures alone
+```{r}
+# Save the plot with bigger dimensions
+ggsave("forest_plot_QT_phenotypes_fentanyl.png", forest_plot, 
+       width = 16, height = 12 , dpi = 300, bg = "white")
+```
+
+Now I want to represent phenotype 1:
 ```{r}
 # Calculate p-values from log10pvalue
-phenotype1 <- phenotype1 %>% mutate(P = (10^(-LOG10P)))
+phenotype3 <- phenotype3 %>% mutate(P = (10^(-LOG10P)))
 
 # Compute adjusted p-values using FDR method
-phenotype1 <- phenotype1 %>% mutate(P_adj = p.adjust(P, method = "fdr"))
+phenotype3 <- phenotype3 %>% mutate(P_adj = p.adjust(P, method = "fdr"))
 
 # Convert ID to a factor with the specified order
-phenotype1 <- phenotype1 %>% mutate(ID = factor(ID, levels = rev(id_order), ordered = TRUE))
+phenotype3 <- phenotype3 %>% mutate(ID = factor(ID, levels = rev(id_order), ordered = TRUE))
 
 # Calculate confidence intervals (assuming 95% CI)
-phenotype1 <- phenotype1 %>%
+phenotype3 <- phenotype3 %>%
   mutate(lower = BETA - 1.96 * SE,  # Lower bound
          upper = BETA + 1.96 * SE)  # Upper bound
 
@@ -144,7 +147,7 @@ forest_plot <- ggplot(phenotype1, aes(x = BETA, y = ID)) +
     strip.text = element_text(size = 16, face = "bold")  # Bigger facet titles
   ) +
   labs(
-    title = "Forest Plot of Total Exposure Count QT Phenotype: Morphine+Codeine",
+    title = "Forest Plot of Number of Drug Eras QT Phenotype: Fentanyl",
     x = "Beta (Effect Size)",
     y = "Mask"
   ) +
@@ -158,7 +161,7 @@ print(forest_plot)
 
 ```{r}
 # Save the plot with bigger dimensions
-ggsave("forest_plot_total_exposure_counts_morphine_codeine.png", forest_plot, 
+ggsave("forest_plot_number_drug_eras_fentanyl.png", forest_plot, 
        width = 16, height = 12 , dpi = 300, bg = "white")
 ```
 

@@ -1,0 +1,6 @@
+No_efficacy	R181C,A104D,N190K
+Reduced_efficacy	T155I
+No_Reduced_efficacy	R181C,A104D,N190K,T155I
+WT_efficacy	S147C,N152D,C192F,M205T,G255E	
+No_Reduced_efficacy_High_Impact_Variants	R181C,A104D,N190K,T155I,frameshift_variant,stop_gained,splice_donor_variant
+No_Reduced_efficacy_High_Moderate_Impact_Variants	R181C,A104D,N190K,T155I,frameshift_variant,stop_gained,splice_donor_variant,missense_variant,inframe_deletion,inframe_insertion

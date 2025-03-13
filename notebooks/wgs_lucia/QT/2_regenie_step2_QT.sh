@@ -10,10 +10,10 @@ dir="WGS_Lucia/Data/Output_regenie"
 
 
 # Quantitative treat
-cp "${regenie_file_dir}/phenos.QT.LOCO/phenos.QT.step1_pred.list" .
+cp "${regenie_file_dir}/phenos_loperamide.QT.LOCO/phenos.QT.step1_pred.list" .
 #sed -i "s|/tmp/|${regenie_file_dir}/phenos.QT.LOCO/|g" phenos.QT.step1_pred.list
-sed "s|/tmp/|${regenie_file_dir}/phenos.QT.LOCO/|g" "phenos.QT.step1_pred.list" > "new_QT.list"
-dx upload new_QT.list --path WGS_Lucia/Data/Input_regenie/phenos.QT.step1_pred_new.list
+sed "s|/tmp/|${regenie_file_dir}/phenos_loperamide.QT.LOCO/|g" "phenos.QT.step1_pred.list" > "new_QT.list"
+dx upload new_QT.list --path WGS_Lucia/Data/Input_regenie/phenos_loperamide.QT.step1_pred_new.list
 
 r -p "/phenos.QT"
 
@@ -22,13 +22,13 @@ run_regenie_step2="regenie --step 2 \
   --bgen "${wgs_dir}/OPRM1.bgen" \
   --sample "${wgs_dir}/OPRM1.sample" \
   --ref-first \
-  --phenoFile "${data_file_dir}/phenotypes/morphine_codeine.phenotype.QT.tsv" \
+  --phenoFile "${data_file_dir}/phenotypes/loperamide_phenotype.QT.tsv" \
   --covarFile "${regenie_file_dir}/covariates.tsv" \
-  --pred "${regenie_file_dir}/phenos.QT.step1_pred_new.list" \
+  --pred "${regenie_file_dir}/phenos_loperamide.QT.step1_pred_new.list" \
   --bsize 200 \
-  --set-list "${wgs_dir}/OPRM1.good_setlist" \
-  --anno-file "${wgs_dir}/OPRM1.annotations_2" \
-  --mask-def "${wgs_dir}/OPRM1_4.mask" \
+  --set-list "${wgs_dir}/OPRM1.setlist" \
+  --anno-file "${wgs_dir}/OPRM1.annotations" \
+  --mask-def "${wgs_dir}/OPRM1_loperamide.mask" \
   --aaf-bins 0.1 \
   --vc-tests skato,acato-full \
   --verbose
@@ -36,5 +36,5 @@ run_regenie_step2="regenie --step 2 \
 
 dx run swiss-army-knife \
    -icmd="${run_regenie_step2}" --tag="Step2_regenie_QT" --instance-type "mem1_ssd1_v2_x16"\
-   --destination="/WGS_Lucia/Data/Output_regenie/QT" \
+   --destination="/WGS_Lucia/Data/Output_regenie/QT/loperamide" \
    -iimage="ghcr.io/rgcgithub/regenie/regenie:v3.2.6.gz" --yes;
