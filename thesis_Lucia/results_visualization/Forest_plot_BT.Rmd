@@ -1,0 +1,272 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(stringr)
+library(ggtext)
+
+```
+
+
+```{r}
+# Function to process each file
+process_file <- function(file_path, phenotype) {
+  df <- read.table(file_path, header = TRUE, sep = " ", skip = 1, stringsAsFactors = FALSE)
+  
+  # Calculate p-values from log10pvalue
+  df <- df %>% mutate(P=(10^(-LOG10P)))
+  # Filter rows where p_adj < 0.05
+  significant_results <- df %>% filter(P < 0.05)
+  # Display the results
+  if (nrow(significant_results) > 0) {
+    print(significant_results[, c("ID", "TEST","P","BETA")])
+    } else {
+      print("No significant associations")
+    }
+  
+  df <- df %>% filter(df$TEST == "ADD")
+  # Filter rows where ID ends with "all"
+  df <- df %>% filter(grepl(".all$", ID))
+  # Compute adjusted p-values using Bonferroni method
+  df <- df %>% mutate(P_adj = p.adjust(P, method = "bonferroni"))
+  # Keep only necessary columns and add phenotype column
+  df <- df %>% 
+    select(ID, A1FREQ, N, BETA, SE, CHISQ, LOG10P,P,P_adj) %>% 
+    mutate(Phenotype = phenotype) %>% 
+    select(Phenotype, everything())
+  
+  return(df)
+}
+
+# File paths (update these paths as necessary)
+file1 <- "BT/burden_test/phenos.BT.step2_group_1_45d.regenie"
+file2 <- "BT/burden_test/phenos.BT.step2_group_2_90d.regenie"
+file3 <- "BT/burden_test/phenos.BT.step2_group_3_180d.regenie"
+file4 <- "BT/burden_test/phenos.BT.step2_group_4_365d.regenie"
+file5 <- "BT/burden_test/phenos.BT.step2_group_5_any.regenie"
+```
+
+
+```{r}
+# Process each file
+phenotype1 <- process_file(file1, "Group 1: >=1 other drugs within 45 days")
+```
+
+```{r}
+# Process each file
+phenotype2 <- process_file(file2, "Group 2: >=2 other drugs within 90 days")
+```
+
+
+```{r}
+phenotype3 <- process_file(file3, "Group 3: >=3 other drugs within 180 days")
+```
+
+
+```{r}
+phenotype4 <- process_file(file4, "Group 4: >=4 other drugs within 365 days")
+```
+
+
+```{r}
+phenotype5 <- process_file(file5, "Group 5: Combination of previous groups")
+```
+
+
+```{r}
+# Combine all into one data frame
+combined_df <- bind_rows(phenotype1, phenotype2, phenotype3, phenotype4, phenotype5)
+
+# Calculate Odds Ratios (OR) instead of HR
+combined_df <- combined_df %>%
+  mutate(
+    OR = exp(BETA),  # Calculate OR instead of HR
+    lower = exp(BETA - 1.96 * SE),  # Lower 95% CI for OR
+    upper = exp(BETA + 1.96 * SE)   # Upper 95% CI for OR
+  )
+
+# STEP 1: Read the overlap table
+overlap_info <- read_tsv("BT/burden_test/mask_phenotype_BT_overlap.tsv", show_col_types = FALSE)
+
+# STEP 2: Prepare overlap info
+overlap_info_prepared <- overlap_info %>%
+  mutate(
+    # The Phenotype_Event is the event group like "group_1_45d" without suffixes
+    Phenotype_Event_Clean = Phenotype_Event,
+    Status = ifelse(Phenotype_Event == "control", "Control", "Case")  # "Control" vs "Case" status
+  )
+
+# STEP 3: Pivot wider and collapse duplicate rows by summing the Phenotype and Control columns
+overlap_summary <- overlap_info_prepared %>%
+  pivot_wider(
+    names_from = Status,
+    values_from = Overlap_EID_Count,
+    values_fill = 0
+  ) %>%
+  group_by(Mask, Phenotype_Event_Clean) %>%
+  summarise(
+    Case = sum(Case),  # Summing phenotype counts for each mask
+    Control = sum(Control),      # Summing control counts for each mask
+    .groups = "drop"
+  )
+# Identify rows with "control" and extract control values
+control_values <- overlap_summary[overlap_summary$Phenotype_Event_Clean == "control", ]
+
+# Replace Control values for non-"control" rows based on the corresponding Mask
+overlap_summary$Control <- sapply(1:nrow(overlap_summary), function(i) {
+  if (overlap_summary$Phenotype_Event_Clean[i] != "control") {
+    # Get the corresponding control value for the same Mask
+    control_values$Control[control_values$Mask == overlap_summary$Mask[i]]
+  } else {
+    # Keep control row as is
+    overlap_summary$Control[i]
+  }
+})
+
+# Remove the "control" rows
+overlap_summary <- overlap_summary[overlap_summary$Phenotype_Event_Clean != "control", ]
+print(overlap_summary)
+# STEP 4: Prepare combined_df
+combined_df <- combined_df %>%
+  mutate(
+    Mask = str_extract(ID, "(?<=OPRM1\\.).[^.]+"),
+    
+    # Ensure Phenotype_Event is defined before use
+    Phenotype_Event = case_when(
+      Phenotype == "Group 1: >=1 other drugs within 45 days" ~ "group_1_45d",
+      Phenotype == "Group 2: >=2 other drugs within 90 days" ~ "group_2_90d",
+      Phenotype == "Group 3: >=3 other drugs within 180 days" ~ "group_3_180d",
+      Phenotype == "Group 4: >=4 other drugs within 365 days" ~ "group_4_365d",
+      Phenotype == "Group 5: Combination of previous groups" ~ "group_5_any",
+    )
+  )
+
+# STEP 5: Merge properly with overlap summary
+combined_df <- combined_df %>%
+  left_join(
+    overlap_summary,
+    by = c("Mask", "Phenotype_Event" = "Phenotype_Event_Clean")
+  )
+
+# STEP 6: Build ID_label
+combined_df <- combined_df %>%
+  mutate(
+    ID_label = paste0(
+      "**", Mask, "** \n",
+      "(Case N = ", Case, " , \n",
+      "Control N = ", Control, ")"
+    ),
+    ID_label = factor(ID_label, levels = rev(unique(ID_label)), ordered = TRUE)
+  )
+
+# Define the desired order for ID
+combined_df <- combined_df %>%
+  mutate(
+    is_WT = grepl("WT_efficacy", ID)  # Create a helper column to detect WT_efficacy
+  ) %>%
+  arrange(Phenotype, is_WT) %>%
+  select(-is_WT)  # Optionally remove the helper column
+
+# Extract N control from overlap_info
+control_N <- overlap_info %>%
+  filter(Mask == "Total" & Phenotype_Event == "control") %>%
+  pull(Overlap_EID_Count)
+
+# 1. Filter overlap_info to only "Total" rows first
+overlap_info_total <- overlap_info %>%
+  filter(Mask == "Total") %>%
+  select(Phenotype_Event, Overlap_EID_Count)
+
+# Join the N counts onto combined_df using Phenotype_Event
+combined_df <- combined_df %>%
+  left_join(overlap_info_total %>% select(Phenotype_Event, Overlap_EID_Count),
+            by = "Phenotype_Event") %>%
+  mutate(phenotype_label = paste0(Phenotype, " (Case N=", Overlap_EID_Count, ", Control N =", control_N, ")"))
+
+print(combined_df)
+```
+
+```{r}
+# Ensure that ID_label is a factor with reversed levels
+combined_df$ID_label <- factor(combined_df$ID_label, levels = rev(unique(combined_df$ID_label)))
+
+# STEP 7: Plot
+forest_plot <- ggplot(combined_df, aes(x = OR, y = ID_label)) +
+  geom_point(aes(color = Phenotype), size = 3) +
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red", size = 0.5) +
+  facet_wrap(~ phenotype_label, scales = "free_y", ncol = 1) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.y = element_markdown(size = 10),
+    strip.text = element_text(size = 14, face = "bold"),
+    legend.position = "none"
+  ) +
+  labs(
+    title = "Forest Plot of BT phenotypes with 95% CI: Morphine and Codeine single exposure users",
+    x = "Odds Ratio (exp(BETA))",
+    y = "Masks"
+  ) +
+  geom_text(aes(label = sprintf("P: %.3g\nP_adj: %.3g", 10^(-LOG10P), P_adj)),
+            hjust = -0.2, size = 3)
+
+# Print plot
+print(forest_plot)
+```
+
+```{r}
+# Save the plot with bigger dimensions
+ggsave("BT/burden_test/forest_plot_BT_phenotypes_morphine_codeine.png", forest_plot, 
+       width = 16, height = 12 , dpi = 300, bg = "white")
+```
+
+```{r}
+# Filter the first phenotype
+first_phenotype_df <- combined_df %>%
+  filter(Phenotype == unique(combined_df$Phenotype)[1])
+
+# Make sure ID_label is a factor with reversed levels
+first_phenotype_df$ID_label <- factor(first_phenotype_df$ID_label, levels = rev(unique(first_phenotype_df$ID_label)))
+
+# Create the forest plot
+forest_plot <- ggplot(first_phenotype_df, aes(x = OR, y = ID_label)) +
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2, color = "grey40") +
+  geom_point(color = "black", size = 3) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red", size = 0.6) +
+  geom_text(
+    aes(label = sprintf("P: %.3g\nP_adj: %.3g", 10^(-LOG10P), P_adj)),
+    hjust = -0.1, vjust = 0.5, size = 3.2
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.text.y = element_markdown(size = 5),
+    axis.text.x = element_text(size = 10),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0),
+    panel.grid.major.y = element_line(color = "grey90"),
+    legend.position = "none"
+  ) +
+  labs(
+    title = "Forest plot binary phenotype (Codeine/Morphine single exposure users):\n≥1 other MOR-interacting drugs within 45 days",
+    subtitle = "Case N=1849 | Control N=36075",
+    x = "Odds Ratio",
+    y = "Masks"
+  )
+
+# Show the plot
+print(forest_plot)
+```
+```{r}
+# Save the plot with bigger dimensions
+ggsave("BT/burden_test/forest_plot_BT_group_1_45d_morphine_codeine.png", plot = forest_plot, width = 10, height = 6, dpi = 300, bg = "white")
+```
+
+

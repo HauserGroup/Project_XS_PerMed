@@ -1,0 +1,27 @@
+##MASKS=<No_efficacy_variants="G255E,R181C,A104D,N190K";High_Impact_variants="frameshift_variant,stop_gained,splice_donor_variant";Pathogenic_variants="likely_pathogenic";High_Impact_Pathogenic_variants="frameshift_variant,stop_gained,splice_donor_variant,likely_pathogenic";Benign_Ambiguous_variants="likely_benign,ambiguous";Benign_Synonymous_variants="synonymous_variant,likely_benign";Benign_Ambiguous_Synonymus_variants="likely_benign,ambiguous,synonymous_variant";Synonymus_variants="synonymous_variant";WT_efficacy_variants="S147C,N152D,T155I,C192F,M205T">
+CHROM GENPOS ID ALLELE0 ALLELE1 A1FREQ N TEST BETA SE CHISQ LOG10P EXTRA
+6 154010515 OPRM1.No_efficacy_variants.0.01 ref No_efficacy_variants.0.01 0.00243357 88553 ADD 0.74975 0.423845 3.1291 1.11404 NA
+6 154010515 OPRM1.No_efficacy_variants.all ref No_efficacy_variants.all 0.00243357 88553 ADD 0.74975 0.423845 3.1291 1.11404 NA
+6 154010515 OPRM1.High_Impact_variants.singleton ref High_Impact_variants.singleton 3.3878e-05 88553 ADD -3.8444 3.61422 1.13143 0.541407 NA
+6 154010515 OPRM1.High_Impact_variants.0.01 ref High_Impact_variants.0.01 0.000581573 88553 ADD 0.588921 0.871283 0.456874 0.301822 NA
+6 154010515 OPRM1.High_Impact_variants.all ref High_Impact_variants.all 0.000581573 88553 ADD 0.588921 0.871283 0.456874 0.301822 NA
+6 154010515 OPRM1.Pathogenic_variants.singleton ref Pathogenic_variants.singleton 0.000101634 88553 ADD 0.359029 2.08716 0.0295903 0.0637763 NA
+6 154010515 OPRM1.Pathogenic_variants.0.01 ref Pathogenic_variants.0.01 0.00291916 88553 ADD 0.283904 0.168465 2.593 0.969251 NA
+6 154010515 OPRM1.Pathogenic_variants.all ref Pathogenic_variants.all 0.00291916 88553 ADD 0.283904 0.168465 2.593 0.969251 NA
+6 154010515 OPRM1.High_Impact_Pathogenic_variants.singleton ref High_Impact_Pathogenic_variants.singleton 0.000135512 88553 ADD -0.692191 1.80742 0.146667 0.153823 NA
+6 154010515 OPRM1.High_Impact_Pathogenic_variants.0.01 ref High_Impact_Pathogenic_variants.0.01 0.00350073 88553 ADD 0.254903 0.154051 2.52315 0.950061 NA
+6 154010515 OPRM1.High_Impact_Pathogenic_variants.all ref High_Impact_Pathogenic_variants.all 0.00350073 88553 ADD 0.254903 0.154051 2.52315 0.950061 NA
+6 154010515 OPRM1.Benign_Ambiguous_variants.singleton ref Benign_Ambiguous_variants.singleton 0.000158097 88553 ADD -0.572191 0.811899 0.605759 0.360126 NA
+6 154010515 OPRM1.Benign_Ambiguous_variants.0.01 ref Benign_Ambiguous_variants.0.01 0.00510993 88553 ADD -0.173828 0.153658 1.35072 0.610565 NA
+6 154010515 OPRM1.Benign_Ambiguous_variants.all ref Benign_Ambiguous_variants.all 0.131012 88553 ADD -0.0428337 0.0437362 0.959157 0.484922 NA
+6 154010515 OPRM1.Benign_Synonymous_variants.singleton ref Benign_Synonymous_variants.singleton 0.000259731 88553 ADD -2.22804 1.30072 2.93411 1.06185 NA
+6 154010515 OPRM1.Benign_Synonymous_variants.0.01 ref Benign_Synonymous_variants.0.01 0.00686594 88553 ADD -0.3149 0.255832 1.51509 0.660818 NA
+6 154010515 OPRM1.Benign_Synonymous_variants.all ref Benign_Synonymous_variants.all 0.132294 88553 ADD -0.0349645 0.0434604 0.647243 0.375615 NA
+6 154010515 OPRM1.Benign_Ambiguous_Synonymus_variants.singleton ref Benign_Ambiguous_Synonymus_variants.singleton 0.000271024 88553 ADD -0.394277 0.628455 0.45007 0.299036 NA
+6 154010515 OPRM1.Benign_Ambiguous_Synonymus_variants.0.01 ref Benign_Ambiguous_Synonymus_variants.0.01 0.00702404 88553 ADD -0.377034 0.252726 2.22568 0.867316 NA
+6 154010515 OPRM1.Benign_Ambiguous_Synonymus_variants.all ref Benign_Ambiguous_Synonymus_variants.all 0.132378 88553 ADD -0.036954 0.0434415 0.723624 0.403449 NA
+6 154010515 OPRM1.Synonymus_variants.singleton ref Synonymus_variants.singleton 0.000112927 88553 ADD -0.1931 1.97372 0.00957179 0.0352395 NA
+6 154010515 OPRM1.Synonymus_variants.0.01 ref Synonymus_variants.0.01 0.00213432 88553 ADD 0.632414 0.453283 1.94655 0.787921 NA
+6 154010515 OPRM1.Synonymus_variants.all ref Synonymus_variants.all 0.00213432 88553 ADD 0.632414 0.453283 1.94655 0.787921 NA
+6 154010515 OPRM1.WT_efficacy_variants.0.01 ref WT_efficacy_variants.0.01 0.0148668 88553 ADD 0.130362 0.0752679 2.88025 1.04734 NA
+6 154010515 OPRM1.WT_efficacy_variants.all ref WT_efficacy_variants.all 0.0148668 88553 ADD 0.130362 0.0752679 2.88025 1.04734 NA

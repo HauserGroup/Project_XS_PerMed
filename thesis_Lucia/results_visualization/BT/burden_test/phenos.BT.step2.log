@@ -1,0 +1,93 @@
+Start time: Sun Apr 20 13:06:45 2025
+
+              |=============================|
+              |      REGENIE v3.2.6.gz      |
+              |=============================|
+
+Copyright (c) 2020-2022 Joelle Mbatchou, Andrey Ziyatdinov and Jonathan Marchini.
+Distributed under the MIT License.
+Compiled with Boost Iostream library.
+Using Intel MKL with Eigen.
+
+Log of output saved in file : phenos.BT.step2.log
+
+Options in effect:
+  --step 2 \
+  --bt \
+  --out phenos.BT.step2 \
+  --bgen /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.bgen \
+  --sample /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.sample \
+  --ref-first \
+  --phenoFile /mnt/project/WGS_Lucia/Data/phenotypes/phenotypes.BT.tsv \
+  --covarFile /mnt/project/WGS_Lucia/Data/Input_regenie/covariates.tsv \
+  --pred /mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.step1_pred_new.list \
+  --firth \
+  --approx \
+  --use-null-firth /mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.step1_firth_new.list \
+  --vc-tests skato,acato-full \
+  --bsize 200 \
+  --set-list /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.setlist \
+  --anno-file /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.annotations \
+  --mask-def /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1_morphine.mask \
+  --verbose
+
+Association testing mode (joint tests) with fast multithreading using OpenMP
+ * bgen             : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.bgen]
+   -summary : bgen file (v1.2 layout, zlib compressed) with 431455 named samples and 3401 variants with 8-bit encoding.
+   -sample file: /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.sample
+ * phenotypes       : [/mnt/project/WGS_Lucia/Data/phenotypes/phenotypes.BT.tsv] n_pheno = 5
+   -number of phenotyped individuals  = 33021
+ * covariates       : [/mnt/project/WGS_Lucia/Data/Input_regenie/covariates.tsv] n_cov = 25
+   -number of individuals with covariate data = 426154
+ * number of individuals used in analysis = 32806
+ * case-control counts for each trait:
+   - 'group_1_45d': 1602 cases and 31054 controls
+   - 'group_2_90d': 324 cases and 31054 controls
+   - 'group_3_180d': 207 cases and 31054 controls
+   - 'group_4_365d': 323 cases and 31054 controls
+   - 'group_5_any': 1752 cases and 31054 controls
+ * LOCO predictions : [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.step1_pred_new.list]
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.LOCO/phenos.BT.step1_1.loco] for phenotype 'group_1_45d'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.LOCO/phenos.BT.step1_2.loco] for phenotype 'group_2_90d'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.LOCO/phenos.BT.step1_3.loco] for phenotype 'group_3_180d'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.LOCO/phenos.BT.step1_4.loco] for phenotype 'group_4_365d'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.LOCO/phenos.BT.step1_5.loco] for phenotype 'group_5_any'
+ * annotations      : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.annotations] 
+   +number of annotations categories = 23
+ * masks            : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1_morphine.mask] n_masks = 4
+ * aaf cutoffs      : [ 2 : 0.01 1 ] + singletons
+ * set file         : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.setlist] n_sets = 1
+ * # threads        : [15]
+ * # tested sets    : [1]
+ * max block size   : [200]
+ * rule used to build masks : max
+ * computing gene-based tests for each set of variants included in a mask (rho=[0,0.01,0.04,0.09,0.16,0.25,0.5,1])
+  -variants with MAC <= 10 are collapsed into a mask
+  -weights are obtained from Beta(MAF,1,25)
+  -list of gene-based tests run: ACATO,ACATV,SKATO
+ * approximate memory usage : 2GB
+ * using minimum MAC of 5 (masks with lower MAC are ignored)
+ * using fast Firth correction for logistic regression p-values less than 0.05
+
+Chromosome 6 [1 sets in total]
+   -reading loco predictions for the chromosome...done (2837ms) 
+   -fitting null logistic regression on binary phenotypes...done (2272ms) 
+   -fitting null Firth logistic regression on binary phenotypes...done (409674ms) 
+ set [1/1] : OPRM1 - 222 variants...2 chunks
+     -reading in genotypes, computing gene-based tests and building masks...WARNING: 3/12 masks fail MAC filter and will be skipped...done (10761ms) 
+     -computing association tests...done (209ms) 
+
+Association results stored separately for each trait in files : 
+* [phenos.BT.step2_group_1_45d.regenie]
+* [phenos.BT.step2_group_2_90d.regenie]
+* [phenos.BT.step2_group_3_180d.regenie]
+* [phenos.BT.step2_group_4_365d.regenie]
+* [phenos.BT.step2_group_5_any.regenie]
+
+Number of tests with Firth correction : 1
+Number of failed tests : (0/1)
+Number of ignored tests due to low MAC : 0
+
+Elapsed time : 444.107s
+End time: Sun Apr 20 13:14:09 2025
+

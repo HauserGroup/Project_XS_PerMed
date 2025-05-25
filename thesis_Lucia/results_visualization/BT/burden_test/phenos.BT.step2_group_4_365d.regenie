@@ -1,0 +1,27 @@
+##MASKS=<No_efficacy="G255E,R181C,A104D,N190K";WT_efficacy="S147C,N152D,T155I,C192F,M205T";No_efficacy_High_Impact_Variants="G255E,R181C,A104D,N190K,frameshift_variant,stop_gained,splice_donor_variant";No_efficacy_High_Moderate_Impact_Variants="G255E,R181C,A104D,N190K,frameshift_variant,stop_gained,splice_donor_variant,missense_variant,inframe_deletion,inframe_insertion">
+CHROM GENPOS ID ALLELE0 ALLELE1 A1FREQ N TEST BETA SE CHISQ LOG10P EXTRA
+6 154010515 OPRM1.No_efficacy.0.01 ref No_efficacy.0.01 0.00256557 31377 ADD 0.00218107 0.726545 9.01187e-06 0.00104148 NA
+6 154010515 OPRM1.No_efficacy.all ref No_efficacy.all NA 31377 ADD-ACATO NA NA 2.11911e-05 0.00159808 NA
+6 154010515 OPRM1.No_efficacy.all ref No_efficacy.all NA 31377 ADD-ACATV NA NA 0.000939789 0.0107532 NA
+6 154010515 OPRM1.No_efficacy.all ref No_efficacy.all NA 31377 ADD-SKAT NA NA 5.48219e-05 0.00257326 NA
+6 154010515 OPRM1.No_efficacy.all ref No_efficacy.all NA 31377 ADD-SKATO NA NA 8.53774e-05 0.00321363 NA
+6 154010515 OPRM1.No_efficacy.all ref No_efficacy.all 0.00256557 31377 ADD 0.00218107 0.726545 9.01187e-06 0.00104148 NA
+6 154010515 OPRM1.WT_efficacy.0.01 ref WT_efficacy.0.01 0.0152978 31377 ADD -0.131626 0.32567 0.163354 0.163621 NA
+6 154010515 OPRM1.WT_efficacy.all ref WT_efficacy.all NA 31377 ADD-ACATO NA NA 0.126367 0.141325 NA
+6 154010515 OPRM1.WT_efficacy.all ref WT_efficacy.all NA 31377 ADD-ACATV NA NA 0.138286 0.148747 NA
+6 154010515 OPRM1.WT_efficacy.all ref WT_efficacy.all NA 31377 ADD-SKAT NA NA 0.127742 0.142195 NA
+6 154010515 OPRM1.WT_efficacy.all ref WT_efficacy.all NA 31377 ADD-SKATO NA NA 0.0698674 0.101533 NA
+6 154010515 OPRM1.WT_efficacy.all ref WT_efficacy.all 0.0152978 31377 ADD -0.131626 0.32567 0.163354 0.163621 NA
+6 154010515 OPRM1.No_efficacy_High_Impact_Variants.0.01 ref No_efficacy_High_Impact_Variants.0.01 0.00320298 31377 ADD -0.212218 0.64897 0.106934 0.128624 NA
+6 154010515 OPRM1.No_efficacy_High_Impact_Variants.all ref No_efficacy_High_Impact_Variants.all NA 31377 ADD-ACATO NA NA 0.00456869 0.0240582 NA
+6 154010515 OPRM1.No_efficacy_High_Impact_Variants.all ref No_efficacy_High_Impact_Variants.all NA 31377 ADD-ACATV NA NA 0.00149827 0.0136208 NA
+6 154010515 OPRM1.No_efficacy_High_Impact_Variants.all ref No_efficacy_High_Impact_Variants.all NA 31377 ADD-SKAT NA NA 0.00328206 0.0203084 NA
+6 154010515 OPRM1.No_efficacy_High_Impact_Variants.all ref No_efficacy_High_Impact_Variants.all NA 31377 ADD-SKATO NA NA 0.0406939 0.0756535 NA
+6 154010515 OPRM1.No_efficacy_High_Impact_Variants.all ref No_efficacy_High_Impact_Variants.all 0.00320298 31377 ADD -0.212218 0.64897 0.106934 0.128624 NA
+6 154010515 OPRM1.No_efficacy_High_Moderate_Impact_Variants.singleton ref No_efficacy_High_Moderate_Impact_Variants.singleton 0.000366511 31377 ADD -1.02488 2.17203 0.222644 0.195839 NA
+6 154010515 OPRM1.No_efficacy_High_Moderate_Impact_Variants.0.01 ref No_efficacy_High_Moderate_Impact_Variants.0.01 0.017959 31377 ADD 0.52651 0.299172 3.09721 1.10554 NA
+6 154010515 OPRM1.No_efficacy_High_Moderate_Impact_Variants.all ref No_efficacy_High_Moderate_Impact_Variants.all NA 31377 ADD-ACATO NA NA 1.6063 0.688218 NA
+6 154010515 OPRM1.No_efficacy_High_Moderate_Impact_Variants.all ref No_efficacy_High_Moderate_Impact_Variants.all NA 31377 ADD-ACATV NA NA 0.0628968 0.0958393 NA
+6 154010515 OPRM1.No_efficacy_High_Moderate_Impact_Variants.all ref No_efficacy_High_Moderate_Impact_Variants.all NA 31377 ADD-SKAT NA NA 0.987433 0.494347 NA
+6 154010515 OPRM1.No_efficacy_High_Moderate_Impact_Variants.all ref No_efficacy_High_Moderate_Impact_Variants.all NA 31377 ADD-SKATO NA NA 2.10984 0.834593 NA
+6 154010515 OPRM1.No_efficacy_High_Moderate_Impact_Variants.all ref No_efficacy_High_Moderate_Impact_Variants.all 0.144708 31377 ADD 0.131703 0.117594 1.25435 0.580502 NA
