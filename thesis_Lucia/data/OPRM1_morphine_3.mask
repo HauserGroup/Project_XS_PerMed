@@ -1,0 +1,5 @@
+No_efficacy	G255E,R181C,A104D,N190K
+No_efficacy_no_R181C	G255E,A104D,N190K
+R181C	R181C	
+High_Impact_Variants	frameshift_variant,stop_gained,splice_donor_variant
+WT_efficacy	S147C,N152D,T155I,C192F,M205T

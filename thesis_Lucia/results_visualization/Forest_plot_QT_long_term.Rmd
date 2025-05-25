@@ -1,0 +1,206 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(stringr)
+library(ggtext)
+
+```
+
+
+```{r}
+# Function to process each file
+process_file <- function(file_path, phenotype) {
+  df <- read.table(file_path, header = TRUE, sep = " ", skip = 1, stringsAsFactors = FALSE)
+  
+  # Calculate p-values from log10pvalue
+  df <- df %>% mutate(P=(10^(-LOG10P)))
+  # Filter rows where p_adj < 0.05
+  significant_results <- df %>% filter(P < 0.05)
+  # Display the results
+  if (nrow(significant_results) > 0) {
+    print(significant_results[, c("ID", "TEST","P","BETA")])
+    } else {
+      print("No significant associations")
+    }
+  
+  df <- df %>% filter(df$TEST == "ADD")
+  # Filter rows where ID ends with "all"
+  df <- df %>% filter(grepl(".all$", ID))
+  # Compute adjusted p-values using Bonferroni method
+  df <- df %>% mutate(P_adj = p.adjust(P, method = "bonferroni"))
+  # Keep only necessary columns and add phenotype column
+  df <- df %>% 
+    select(ID, A1FREQ, N, BETA, SE, CHISQ, LOG10P,P,P_adj) %>% 
+    mutate(Phenotype = phenotype) %>% 
+    select(Phenotype, everything())
+  
+  return(df)
+}
+
+# File paths (update these paths as necessary)
+file1 <- "QT/morphine_codeine/long_term_more_10_exposures/burden_test/phenos.QT.step2_total_exposures_not_injectable.regenie"
+file2 <- "QT/morphine_codeine/long_term_more_10_exposures/burden_test/phenos.QT.step2_PDC_adherence_score.regenie"
+file3 <- "QT/morphine_codeine/long_term_more_10_exposures/burden_test/phenos.QT.step2_MPR_adherence_score.regenie"
+```
+
+
+```{r}
+# Process each file
+phenotype1 <- process_file(file1, "Total exposures")
+```
+
+
+```{r}
+phenotype2 <- process_file(file2, "PDC adherence score")
+```
+
+
+```{r}
+# Combine all into one data frame
+combined_df <- bind_rows(phenotype1, phenotype2)
+
+# Calculate confidence intervals (assuming 95% CI)
+combined_df <- combined_df %>%
+  mutate(lower = BETA - 1.96 * SE,  # Lower bound
+         upper = BETA + 1.96 * SE)  # Upper bound
+
+# STEP 1: Read the overlap table
+overlap_info <- read_tsv("QT/morphine_codeine/long_term_more_10_exposures/burden_test/mask_phenotype_long_term_users_QT_overlap.tsv", show_col_types = FALSE)
+
+# STEP 4: Prepare combined_df
+combined_df <- combined_df %>%
+  mutate(
+    Mask = str_extract(ID, "(?<=OPRM1\\.).[^.]+")
+  )
+
+# STEP 5: Merge properly with overlap summary
+combined_df <- combined_df %>%
+  left_join(
+    overlap_info,
+    by = "Mask"
+  )
+
+# STEP 6: Build ID_label
+combined_df <- combined_df %>%
+  mutate(
+    ID_label = paste0(
+      "**", Mask, "** \n",
+      "(N = ", Overlap_EID_Count, ")"
+    ),
+    ID_label = factor(ID_label, levels = rev(unique(ID_label)), ordered = TRUE)
+  )
+
+# Define the desired order for ID
+combined_df <- combined_df %>%
+  mutate(
+    is_WT = grepl("WT_efficacy", ID)  # Create a helper column to detect WT_efficacy
+  ) %>%
+  arrange(Phenotype, is_WT) %>%
+  select(-is_WT)  # Optionally remove the helper column
+
+# Extract N from overlap_info
+total_N <- overlap_info %>%
+  filter(Mask == "Total") %>%
+  pull(Overlap_EID_Count)
+
+# Add phenotype_label column
+combined_df <- combined_df %>%
+  mutate(phenotype_label = paste0(Phenotype, " (N=", total_N, ")"))
+
+# View result
+print(combined_df)
+
+```
+```{r}
+# Ensure that ID_label is a factor with reversed levels
+combined_df$ID_label <- factor(combined_df$ID_label, levels = rev(unique(combined_df$ID_label)))
+
+# Create the forest plot
+forest_plot <- ggplot(combined_df, aes(x = BETA, y = ID_label)) +
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2, color = "grey40") +
+  geom_point(aes(color = Phenotype), size = 3) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "red", size = 0.6) +
+  geom_text(
+    aes(label = sprintf("P: %.3g\nP_adj: %.3g", 10^(-LOG10P), P_adj)),
+    hjust = -0.1, vjust = 0.5, size = 3.2
+  ) +
+  facet_wrap(~ Phenotype, scales = "free_y", ncol = 1) +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.y = element_markdown(size = 5),
+    axis.text.x = element_text(size = 10),
+    axis.title = element_text(size = 12, face = "bold"),
+    strip.text = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0),
+    legend.position = "none",
+    panel.grid.major.y = element_line(color = "grey90"),
+    strip.placement = "outside"
+  ) +
+  labs(
+    title = "Forest plot quantitave phenotypes \n(Codeine/Morphine users with >= 10 exposures)",
+    subtitle = "N = 21678",
+    x = "Effect Size",
+    y = "Masks"
+  ) 
+
+# Print the plot
+print(forest_plot)
+```
+
+
+```{r}
+# Save the plot with bigger dimensions
+ggsave("QT/morphine_codeine/long_term_more_10_exposures/burden_test/forest_plot_QT_phenotypes_morphine_codeine_long_term_users_10_exposures.png", forest_plot, width = 10, height = 10 , dpi = 300, bg = "white")
+```
+
+Now I want to represent 1 phenotype:
+```{r}
+# Filter for 'Total exposures' phenotype
+PDC_df <- combined_df %>%
+  filter(Phenotype == "PDC adherence score")
+
+# Create the forest plot with consistent style
+forest_plot <- ggplot(PDC_df, aes(x = BETA, y = ID_label)) +
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2, color = "grey40") +
+  geom_point(color = "black", size = 3) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "red", size = 0.6) +
+  geom_text(
+    aes(label = sprintf("P: %.3g\nP_adj: %.3g", 10^(-LOG10P), P_adj)),
+    hjust = -0.1, vjust = 0.5, size = 3.2
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.text.y = element_markdown(size = 5),
+    axis.text.x = element_text(size = 10),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0),
+    panel.grid.major.y = element_line(color = "grey90"),
+    legend.position = "none"
+  ) +
+  labs(
+    title = "Forest plot quantitave phenotype: PDC adherence score 
+    \n(Codeine/Morphine users with >= 10 exposures)",
+    subtitle = "N = 21678",
+    x = "Effect Size",
+    y = "Masks"
+  ) +
+  scale_x_continuous(expand = expansion(mult = c(0.02, 0.4)))
+
+# Show the plot
+print(forest_plot)
+```
+
+
+```{r}
+# Save the plot with bigger dimensions
+ggsave("QT/morphine_codeine/long_term_more_10_exposures/burden_test/forest_plot_PDC_score_QT_phenotype_morphine_codeine_long_term_users_10_exposures.png", forest_plot, width = 10, height = 6 , dpi = 300, bg = "white")
+```

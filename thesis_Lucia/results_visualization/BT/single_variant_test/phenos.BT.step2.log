@@ -1,0 +1,95 @@
+Start time: Sun Apr 20 13:12:49 2025
+
+              |=============================|
+              |      REGENIE v3.2.6.gz      |
+              |=============================|
+
+Copyright (c) 2020-2022 Joelle Mbatchou, Andrey Ziyatdinov and Jonathan Marchini.
+Distributed under the MIT License.
+Compiled with Boost Iostream library.
+Using Intel MKL with Eigen.
+
+Log of output saved in file : phenos.BT.step2.log
+
+Options in effect:
+  --step 2 \
+  --bt \
+  --out phenos.BT.step2 \
+  --bgen /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.bgen \
+  --sample /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.sample \
+  --ref-first \
+  --phenoFile /mnt/project/WGS_Lucia/Data/phenotypes/phenotypes.BT.tsv \
+  --covarFile /mnt/project/WGS_Lucia/Data/Input_regenie/covariates.tsv \
+  --pred /mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.step1_pred_new.list \
+  --firth \
+  --approx \
+  --use-null-firth /mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.step1_firth_new.list \
+  --bsize 200 \
+  --verbose
+
+Association testing mode with fast multithreading using OpenMP
+ * bgen             : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.bgen]
+   -summary : bgen file (v1.2 layout, zlib compressed) with 431455 named samples and 3401 variants with 8-bit encoding.
+   -sample file: /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.sample
+ * phenotypes       : [/mnt/project/WGS_Lucia/Data/phenotypes/phenotypes.BT.tsv] n_pheno = 5
+   -number of phenotyped individuals  = 33021
+ * covariates       : [/mnt/project/WGS_Lucia/Data/Input_regenie/covariates.tsv] n_cov = 25
+   -number of individuals with covariate data = 426154
+ * number of individuals used in analysis = 32806
+ * case-control counts for each trait:
+   - 'group_1_45d': 1602 cases and 31054 controls
+   - 'group_2_90d': 324 cases and 31054 controls
+   - 'group_3_180d': 207 cases and 31054 controls
+   - 'group_4_365d': 323 cases and 31054 controls
+   - 'group_5_any': 1752 cases and 31054 controls
+ * LOCO predictions : [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.step1_pred_new.list]
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.LOCO/phenos.BT.step1_1.loco] for phenotype 'group_1_45d'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.LOCO/phenos.BT.step1_2.loco] for phenotype 'group_2_90d'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.LOCO/phenos.BT.step1_3.loco] for phenotype 'group_3_180d'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.LOCO/phenos.BT.step1_4.loco] for phenotype 'group_4_365d'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.LOCO/phenos.BT.step1_5.loco] for phenotype 'group_5_any'
+ * # threads        : [15]
+ * block size       : [200]
+ * # blocks         : [18]
+ * reading null Firth estimates using file : [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos.BT.step1_firth_new.list]
+ * approximate memory usage : 2GB
+ * using minimum MAC of 5 (variants with lower MAC are ignored)
+ * using fast Firth correction for logistic regression p-values less than 0.05
+
+Chromosome 6 [18 blocks in total]
+   -reading loco predictions for the chromosome...done (2752ms) 
+   -fitting null logistic regression on binary phenotypes...done (2160ms) 
+   -fitting null Firth logistic regression on binary phenotypes...done (374443ms) 
+ block [1/18] : done (829ms) 
+ block [2/18] : done (925ms) 
+ block [3/18] : done (2895ms) 
+ block [4/18] : done (1736ms) 
+ block [5/18] : done (1952ms) 
+ block [6/18] : done (606ms) 
+ block [7/18] : done (1619ms) 
+ block [8/18] : done (2003ms) 
+ block [9/18] : done (1380ms) 
+ block [10/18] : done (379ms) 
+ block [11/18] : done (1503ms) 
+ block [12/18] : done (1424ms) 
+ block [13/18] : done (426ms) 
+ block [14/18] : done (319ms) 
+ block [15/18] : done (2044ms) 
+ block [16/18] : done (869ms) 
+ block [17/18] : done (911ms) 
+ block [18/18] : done (6ms) 
+
+Association results stored separately for each trait in files : 
+* [phenos.BT.step2_group_1_45d.regenie]
+* [phenos.BT.step2_group_2_90d.regenie]
+* [phenos.BT.step2_group_3_180d.regenie]
+* [phenos.BT.step2_group_4_365d.regenie]
+* [phenos.BT.step2_group_5_any.regenie]
+
+Number of tests with Firth correction : 74
+Number of failed tests : (0/74)
+Number of ignored tests due to low MAC : 15436
+
+Elapsed time : 417.41s
+End time: Sun Apr 20 13:19:47 2025
+

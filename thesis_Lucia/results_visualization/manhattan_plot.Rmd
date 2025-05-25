@@ -1,0 +1,134 @@
+---
+title: "gwas_visualization"
+output: html_document
+date: "2025-01-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+## Morphine + Codeine Quantitative phenotypes
+This can be used for any other phenotype
+
+```{r}
+gwas_survival_Available_medication_days <- read.table("survival/single_variant_test/phenos.survival.step2_Available_medication_days.regenie", header =T, as.is = T, sep = " ")
+nrow(gwas_survival_Available_medication_days)
+head(gwas_survival_Available_medication_days)
+```
+
+Adding P column by inversing negativo logarithm with the base 10
+
+```{r}
+gwas_survival_Available_medication_days <- gwas_survival_Available_medication_days %>% mutate(P=(10^(-LOG10P)))
+
+head(gwas_survival_Available_medication_days)
+```
+
+```{r}
+# Dimensions of the dataframe
+dim(gwas_survival_Available_medication_days)
+```
+
+```{r}
+#Lowest P-value
+min(gwas_survival_Available_medication_days$P)
+```
+
+### Generating a Q-Q plot
+
+```{r}
+qqnorm(gwas_survival_Available_medication_days$P, main = "Q-Q plot for Morphine and Codeine Quantitative Phenotype Genome Association")
+```
+
+### Plotting a Manhattan Plot
+
+We can  make an interactive manhattan plot making annotations
+
+```{r}
+# Load the annotation file
+annotations <- read.table("OPRM1.annotations", sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+colnames(annotations) <- c("ID", "Gen", "Annotation")
+
+# Define mask groups
+mask_groups <- list(
+  No_efficacy = c("G255E", "R181C", "A104D", "N190K"),
+  WT_efficacy = c("S147C","N152D","T155I","C192F","M205T"),
+  High_impact_variants = c("frameshift_variant","stop_gained","splice_donor_variant"),
+  Low_impact_variants = c("missense_variant","inframe_deletion","inframe_insertion")
+)
+
+# Add a mask column based on the annotation
+annotations <- annotations %>%
+  mutate(Mask = case_when(
+    Annotation %in% mask_groups$No_efficacy ~ "No_efficacy",
+    Annotation %in% mask_groups$WT_efficacy ~ "WT_efficacy",
+    Annotation %in% mask_groups$High_impact_variants ~ "High_impact_variants",
+    Annotation %in% mask_groups$Low_impact_variants ~ "Low_impact_variants",
+    TRUE ~ "Other"
+  ))
+
+# Merge the GWAS data with the annotations
+gwas_survival_Available_medication_days <- gwas_survival_Available_medication_days %>%
+  left_join(annotations, by = "ID")
+
+# Map masks to colors
+mask_colors <- c(
+  "No_efficacy" = "black",
+  "WT_efficacy" = "green",
+  "High_impact_variants" = "yellow",
+  "Moderate_impact_variants" = "purple",
+  "Other" = "blue"
+)
+
+# Add a color column to the data based on the mask
+gwas_survival_Available_medication_days <- gwas_survival_Available_medication_days %>%
+  mutate(Color = mask_colors[Mask])
+# Calculate Bonferroni threshold for number tests (looking the dimensions)
+bonferroni_threshold <- -log10(0.05 / dim(gwas_survival_Available_medication_days)[1])
+
+```
+
+```{r}
+print(gwas_survival_Available_medication_days)
+```
+
+```{r}
+# Generate Manhattan plot
+# Ensure Mask is a factor for correct legend mapping
+gwas_survival_Available_medication_days$Mask <- as.factor(gwas_survival_Available_medication_days$Mask)
+
+# Create Manhattan plot using ggplot2
+manhattan_plot <- ggplot(gwas_survival_Available_medication_days, aes(x = GENPOS, y = LOG10P, color = Mask)) +
+  geom_point(alpha = 0.8, size = 2) +  # Points for variants
+  geom_hline(yintercept = bonferroni_threshold, linetype = "dashed", color = "red") +  # Genome-wide threshold
+  geom_text(
+    data = gwas_survival_Available_medication_days %>% filter(LOG10P > bonferroni_threshold), 
+    aes(x = GENPOS, y = LOG10P, label = ID),  # Ensure label is only applied here
+    vjust = -1, hjust = 0.5, size = 3, fontface = "bold",
+    check_overlap = TRUE, show.legend = FALSE  # Hide from legend
+) + # Annotate significant variants
+  scale_color_manual(values = setNames(unique(gwas_survival_Available_medication_days$Color), unique(gwas_survival_Available_medication_days$Mask))) +  # Map Colors to Mask
+  labs(
+    title = "Manhattan Plot for survival phenotype: Available medication days to stop",
+    x = "Genomic Position (Mb)",
+    y = "-log10(P-value)",
+  ) +
+  theme_minimal() 
+
+# Print plot
+print(manhattan_plot)
+```
+
+```{r}
+# Save the plot with bigger dimensions
+ggsave("manhattan_plot_survival_Available_medication_days_morphine_codeine.png", manhattan_plot, 
+       width = 16, height = 12 , dpi = 300, bg = "white")
+```
+

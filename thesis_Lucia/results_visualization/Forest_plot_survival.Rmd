@@ -1,0 +1,258 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(stringr)
+library(ggtext)
+```
+
+
+```{r}
+# Function to process each file
+process_file <- function(file_path, phenotype) {
+  df <- read.table(file_path, header = TRUE, sep = " ", skip = 1, stringsAsFactors = FALSE)
+  
+  # Calculate p-values from log10pvalue
+  df <- df %>% mutate(P=(10^(-LOG10P)))
+  # Filter rows where p_adj < 0.05
+  significant_results <- df %>% filter(P < 0.05)
+  # Display the results
+  if (nrow(significant_results) > 0) {
+    print(significant_results[, c("ID", "TEST","P","BETA")])
+    } else {
+      print("No significant associations")
+    }
+  
+  df <- df %>% filter(df$TEST == "ADD")
+  # Filter rows where ID ends with "all"
+  df <- df %>% filter(grepl(".all$", ID))
+  # Compute adjusted p-values using Bonferroni method
+  df <- df %>% mutate(P_adj = p.adjust(P, method = "bonferroni"))
+  # Keep only necessary columns and add phenotype column
+  df <- df %>% 
+    select(ID, A1FREQ, N, BETA, SE, CHISQ, LOG10P,P,P_adj) %>% 
+    mutate(Phenotype = phenotype) %>% 
+    select(Phenotype, everything())
+  
+  return(df)
+}
+
+# File paths (update these paths as necessary)
+file1 <- "survival/target_diseases/burden_test/phenos.survival.step2_Available_medication_days.regenie"
+file2 <- "survival/target_diseases/burden_test/phenos.survival.step2_Available_medication_days_to_F_comorbidity.regenie"
+```
+
+
+```{r}
+# Process each file
+phenotype1 <- process_file(file1, "Time to end treatment")
+```
+
+```{r}
+# Process each file
+phenotype2 <- process_file(file2, "Time to psiquiatric disease diagnosis")
+```
+
+```{r}
+# Combine all into one data frame
+combined_df <- bind_rows(phenotype1, phenotype2)
+
+# Calculate confidence intervals (assuming 95% CI)
+combined_df <- combined_df %>%
+  mutate(
+    HR = exp(BETA),
+    lower = exp(BETA - 1.96 * SE),
+    upper = exp(BETA + 1.96 * SE)
+  )
+
+# STEP 1: Read the overlap table
+overlap_info <- read_tsv("survival/target_diseases/burden_test/mask_phenotype_target_diseases_survival_overlap.tsv", show_col_types = FALSE)
+
+# STEP 2: Prepare overlap info
+overlap_info_prepared <- overlap_info %>%
+  mutate(
+    Phenotype_Event_Clean = str_remove(Phenotype_Event, "_[01]$"),
+    Status = ifelse(str_detect(Phenotype_Event, "_1$"), "Event", "Right_censored")
+  )
+
+# STEP 3: Pivot wider and collapse duplicate rows by summing the Event and Right_censored columns
+overlap_summary <- overlap_info_prepared %>%
+  pivot_wider(
+    names_from = Status,
+    values_from = Overlap_EID_Count,
+    values_fill = 0
+  ) %>%
+  group_by(Mask, Phenotype_Event_Clean) %>%
+  summarise(
+    Event = sum(Event),
+    Right_censored = sum(Right_censored),
+    .groups = "drop"
+  )
+
+# STEP 4: Prepare combined_df
+combined_df <- combined_df %>%
+  mutate(
+    Mask = str_extract(ID, "(?<=OPRM1\\.).[^.]+"),
+    Phenotype_Event = case_when(
+      Phenotype == "Time to end treatment" ~ "Treatment_end",
+      Phenotype == "Time to psiquiatric disease diagnosis" ~ "F_comorbidity_event"
+    )
+  )
+
+# STEP 5: Merge properly
+combined_df <- combined_df %>%
+  left_join(
+    overlap_summary,
+    by = c("Mask", "Phenotype_Event" = "Phenotype_Event_Clean")
+  )
+
+# STEP 6: Build ID_label
+combined_df <- combined_df %>%
+  mutate(
+    ID_label = paste0(
+      "**", Mask, "** \n",
+      "(Event N = ", Event, " , \n",
+      "Right censored N = ", Right_censored, ")"
+    ),
+    ID_label = factor(ID_label, levels = rev(unique(ID_label)), ordered = TRUE)
+  )
+
+# Define the desired order for ID
+combined_df <- combined_df %>%
+  mutate(
+    is_WT = grepl("WT_efficacy", ID)  # Create a helper column to detect WT_efficacy
+  ) %>%
+  arrange(Phenotype, is_WT) %>%
+  select(-is_WT)  # Optionally remove the helper column
+
+
+# Filter overlap_info to only "Total" rows first
+overlap_info_total <- overlap_info_prepared %>%
+  filter(Mask == "Total") %>%
+  select(Phenotype_Event, Overlap_EID_Count)
+
+# First, prepare the data for the join by extracting the counts for both Event and Right censored
+overlap_info_total <- overlap_info_total %>%
+  mutate(
+    # Create a new column to categorize the event type
+    event_type = ifelse(grepl("_1$", Phenotype_Event), "Event", "Right censored"),
+    # Remove the _0 or _1 suffix from Phenotype_Event
+    Phenotype_Event_short = gsub("_(0|1)$", "", Phenotype_Event)
+  )
+
+# Join the counts from "Event" and "Right censored" based on Phenotype_Event_short
+combined_df <- combined_df %>%
+  left_join(
+    overlap_info_total %>%
+      filter(event_type == "Event") %>%
+      select(Phenotype_Event_short, Overlap_EID_Count) %>%
+      rename(Event_N = Overlap_EID_Count),
+    by = c("Phenotype_Event" = "Phenotype_Event_short")
+  ) %>%
+  left_join(
+    overlap_info_total %>%
+      filter(event_type == "Right censored") %>%
+      select(Phenotype_Event_short, Overlap_EID_Count) %>%
+      rename(Right_Censored_N = Overlap_EID_Count),
+    by = c("Phenotype_Event" = "Phenotype_Event_short")
+  ) %>%
+  mutate(
+    # Create the phenotype_label combining both Event and Right censored N values
+    phenotype_label = paste0(
+      Phenotype, " (Event N=", Event_N, ", Right censored N=", Right_Censored_N, ")"
+    )
+  )
+print(combined_df)
+```
+```{r}
+# Ensure that ID_label is a factor with reversed levels
+combined_df$ID_label <- factor(combined_df$ID_label, levels = rev(unique(combined_df$ID_label)))
+
+# Create the forest plot
+forest_plot <- ggplot(combined_df, aes(x = HR, y = ID_label)) +
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2, color = "grey40") +
+  geom_point(aes(color = Phenotype), size = 3) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red", size = 0.6) +
+  geom_text(
+    aes(label = sprintf("P: %.3g\nP_adj: %.3g", 10^(-LOG10P), P_adj)),
+    hjust = -0.1, vjust = 0.5, size = 3.2
+  ) +
+  facet_wrap(~ phenotype_label, scales = "free_y", ncol = 1) +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.y = element_markdown(size = 5),
+    axis.text.x = element_text(size = 10),
+    axis.title = element_text(size = 12, face = "bold"),
+    strip.text = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0),
+    legend.position = "none",
+    panel.grid.major.y = element_line(color = "grey90"),
+    strip.placement = "outside"
+  ) +
+  labs(
+    title = "Forest plot of time-to-event phenotypes (Codeine/Morphine all users)",
+    subtitle = "(Time=Available medication days)",
+    x = "Hazard Ratio",
+    y = "Masks"
+  ) 
+
+# Print the plot
+print(forest_plot)
+```
+
+
+```{r}
+# Save the plot with bigger dimensions
+ggsave("survival/target_diseases/burden_test/forest_plot_target_diseases_survival_phenotypes.png", forest_plot, 
+       width = 10, height = 12 , dpi = 300, bg = "white")
+```
+
+```{r}
+stop_treatment_df <- combined_df %>%
+  filter(Phenotype == "Time to end treatment")
+
+# Create the forest plot with consistent style
+forest_plot <- ggplot(stop_treatment_df, aes(x = HR, y = ID_label)) +
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2, color = "grey40") +
+  geom_point(color = "black", size = 3) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red", size = 0.6) +
+  geom_text(
+    aes(label = sprintf("P: %.3g\nP_adj: %.3g", 10^(-LOG10P), P_adj)),
+    hjust = -0.1, vjust = 0.5, size = 3.2
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.text.y = element_markdown(size = 5),
+    axis.text.x = element_text(size = 10),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0),
+    panel.grid.major.y = element_line(color = "grey90"),
+    legend.position = "none"
+  ) +
+  labs(
+    title = "Forest plot of time-to-event phenotype: Time to stop medication \n(Codeine/Morphine users with target musculoskeletal diseases)",
+    subtitle = "(Time=Available medication days) \nEvent N=11993 | Right censored N=325",
+    x = "Hazard Ratio",
+    y = "Masks"
+  ) + scale_x_continuous(expand = expansion(mult = c(0.25, 0.1)))
+
+# Show the plot
+print(forest_plot)
+```
+
+```{r}
+# Save the plot with bigger dimensions
+ggsave("survival/target_diseases/burden_test/forest_plot_target_diseases_time_to_stop.png", forest_plot, 
+       width = 10, height = 6 , dpi = 300, bg = "white")
+```
+
+
+

@@ -1,0 +1,249 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(stringr)
+library(ggtext)
+```
+
+
+```{r}
+# Function to process a regenie result file and annotate variants
+process_file <- function(file_path, phenotype, annotation_file = "OPRM1.annotations_2") {
+  
+  # Read the regenie step 2 result file (skip mask header line)
+  df <- tryCatch({
+    read.table(file_path, header = TRUE, sep = " ", skip = 1, stringsAsFactors = FALSE)
+  }, error = function(e) {
+    stop(paste("Error reading file:", file_path, "\n", e))
+  })
+  
+  # Calculate raw p-values from LOG10P
+  df <- df %>%
+    mutate(P = 10^(-LOG10P))
+  
+  # Compute Bonferroni-adjusted p-values
+  df <- df %>%
+    mutate(P_adj = p.adjust(P, method = "bonferroni"))
+  
+  # Extract variant string (chr6:POS:REF:ALT) from ID (if present)
+  df <- df %>%
+    mutate(variant_id = ifelse(grepl("chr6:[0-9]+:[A-Z]+:[A-Z]+", ID),
+                               sub(".*(chr6:[0-9]+:[A-Z]+:[A-Z]+)", "\\1", ID),
+                               NA))
+  
+  # Load annotation data
+  annotations <- tryCatch({
+    read_tsv(annotation_file, col_names = c("variant_id", "gene", "annotation"), show_col_types = FALSE)
+  }, error = function(e) {
+    stop(paste("Error reading annotation file:", annotation_file, "\n", e))
+  })
+  
+  # Merge annotations into main dataframe
+  df <- df %>%
+    left_join(annotations, by = "variant_id") %>%
+    mutate(annotation = ifelse(is.na(annotation), "All variants", annotation))
+  
+  # Report significant associations (P < 0.05)
+  significant_results <- df %>% filter(P < 0.05)
+  if (nrow(significant_results) > 0) {
+    cat("\nSignificant associations for phenotype:", phenotype, "\n")
+    print(significant_results %>% select(ID, TEST, P, BETA))
+  } else {
+    cat("\nNo significant associations for phenotype:", phenotype, "\n")
+  }
+  
+  # Format output dataframe
+  df <- df %>%
+    select(ID, A1FREQ, N, BETA, SE, CHISQ, LOG10P, P, P_adj, variant_id, annotation) %>%
+    mutate(Phenotype = phenotype) %>%
+    select(Phenotype, everything())
+  
+  return(df)
+}
+
+# File paths (update these paths as necessary)
+file1 <- "survival/all_users/burden_test_lovo/phenos.survival.step2_Available_medication_days.regenie"
+file2 <- "survival/all_users/burden_test_lovo/phenos.survival.step2_Available_medication_days_to_F_comorbidity.regenie"
+```
+
+
+```{r}
+# Process each file
+phenotype1 <- process_file(file1, "Time to end treatment")
+phenotype1
+```
+
+```{r}
+# Process each file
+phenotype2 <- process_file(file2, "Time to psiquiatric disease diagnosis")
+```
+
+```{r}
+# Combine all into one data frame
+combined_df <- bind_rows(phenotype1, phenotype2)
+
+# Calculate confidence intervals (assuming 95% CI)
+combined_df <- combined_df %>%
+  mutate(
+    HR = exp(BETA),
+    lower = exp(BETA - 1.96 * SE),
+    upper = exp(BETA + 1.96 * SE)
+  )
+
+# STEP 1: Read the overlap table
+overlap_info <- read_tsv("survival/all_users/burden_test_lovo/mask_phenotype_all_users_survival_overlap.tsv", show_col_types = FALSE)
+
+# STEP 2: Prepare overlap info
+overlap_info_prepared <- overlap_info %>%
+  mutate(
+    Phenotype_Event_Clean = str_remove(Phenotype_Event, "_[01]$"),
+    Status = ifelse(str_detect(Phenotype_Event, "_1$"), "Event", "Right_censored")
+  )
+
+# STEP 3: Pivot wider and collapse duplicate rows by summing the Event and Right_censored columns
+overlap_summary <- overlap_info_prepared %>%
+  pivot_wider(
+    names_from = Status,
+    values_from = Overlap_EID_Count,
+    values_fill = 0
+  ) %>%
+  group_by(Mask, Phenotype_Event_Clean) %>%
+  summarise(
+    Event = sum(Event),
+    Right_censored = sum(Right_censored),
+    .groups = "drop"
+  )
+
+# STEP 4: Prepare combined_df
+combined_df <- combined_df %>%
+  mutate(
+    Mask = str_extract(ID, "(?<=OPRM1\\.)[^.]+"),
+    Phenotype_Event = case_when(
+      Phenotype == "Time to end treatment" ~ "Treatment_end",
+      Phenotype == "Time to psiquiatric disease diagnosis" ~ "F_comorbidity_event"
+    ),
+    Mask = ifelse(annotation != "All variants", paste0(Mask, "_no_", annotation), Mask)
+  )
+  
+
+# STEP 5: Merge properly
+combined_df <- combined_df %>%
+  left_join(
+    overlap_summary,
+    by = c("Mask", "Phenotype_Event" = "Phenotype_Event_Clean")
+  )
+
+# STEP 6: Build ID_label
+combined_df <- combined_df %>%
+  mutate(
+    ID_label = paste0(
+      "**", Mask, "** \n",
+      "(Event N = ", Event, " , \n",
+      "Right censored N = ", Right_censored, ")"
+    ),
+    ID_label = factor(ID_label, levels = rev(unique(ID_label)), ordered = TRUE)
+  )
+
+# Define the desired order for ID
+combined_df <- combined_df %>%
+  mutate(
+    is_WT = grepl("WT_efficacy_variants", ID)  # Create a helper column to detect WT_efficacy
+  ) %>%
+  arrange(Phenotype, is_WT) %>%
+  select(-is_WT)  # Optionally remove the helper column
+
+
+# Filter overlap_info to only "Total" rows first
+overlap_info_total <- overlap_info_prepared %>%
+  filter(Mask == "Total") %>%
+  select(Phenotype_Event, Overlap_EID_Count)
+
+# First, prepare the data for the join by extracting the counts for both Event and Right censored
+overlap_info_total <- overlap_info_total %>%
+  mutate(
+    # Create a new column to categorize the event type
+    event_type = ifelse(grepl("_1$", Phenotype_Event), "Event", "Right censored"),
+    # Remove the _0 or _1 suffix from Phenotype_Event
+    Phenotype_Event_short = gsub("_(0|1)$", "", Phenotype_Event)
+  )
+
+# Join the counts from "Event" and "Right censored" based on Phenotype_Event_short
+combined_df <- combined_df %>%
+  left_join(
+    overlap_info_total %>%
+      filter(event_type == "Event") %>%
+      select(Phenotype_Event_short, Overlap_EID_Count) %>%
+      rename(Event_N = Overlap_EID_Count),
+    by = c("Phenotype_Event" = "Phenotype_Event_short")
+  ) %>%
+  left_join(
+    overlap_info_total %>%
+      filter(event_type == "Right censored") %>%
+      select(Phenotype_Event_short, Overlap_EID_Count) %>%
+      rename(Right_Censored_N = Overlap_EID_Count),
+    by = c("Phenotype_Event" = "Phenotype_Event_short")
+  ) %>%
+  mutate(
+    # Create the phenotype_label combining both Event and Right censored N values
+    phenotype_label = paste0(
+      Phenotype, " (Event N=", Event_N, ", Right censored N=", Right_Censored_N, ")"
+    )
+  )
+print(combined_df)
+```
+
+
+
+```{r}
+# Ensure that ID_label is a factor with reversed levels
+combined_df$ID_label <- factor(combined_df$ID_label, levels = rev(unique(combined_df$ID_label)))
+
+stop_treatment_df <- combined_df %>%
+  filter(Phenotype == "Time to end treatment")
+
+# Create the forest plot with consistent style
+forest_plot <- ggplot(stop_treatment_df, aes(x = HR, y = ID_label)) +
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2, color = "grey40") +
+  geom_point(color = "black", size = 3) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red", size = 0.6) +
+  geom_text(
+    aes(label = sprintf("P: %.3g\nP_adj: %.3g", 10^(-LOG10P), P_adj)),
+    hjust = -0.1, vjust = 0.5, size = 3.2
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.text.y = element_markdown(size = 8),
+    axis.text.x = element_text(size = 10),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0),
+    panel.grid.major.y = element_line(color = "grey90"),
+    legend.position = "none"
+  ) +
+  labs(
+    title = "Forest plot of time-to-event phenotype: Time to stop medication (LOVO analysis) \n(Codeine/Morphine all users)",
+    subtitle = "(Time=Available medication days) \nEvent N=101934 | Right censored N=1515",
+    x = "Hazard Ratio",
+    y = "Masks"
+  ) + scale_x_continuous(expand = expansion(mult = c(0.5, 0.1)))
+
+# Show the plot
+print(forest_plot)
+```
+
+```{r}
+# Save the plot with bigger dimensions
+ggsave("survival/all_users/burden_test_lovo/forest_plot_all_users_time_to_stop.png", forest_plot, 
+       width = 12, height = 6 , dpi = 300, bg = "white")
+```
+
+
+

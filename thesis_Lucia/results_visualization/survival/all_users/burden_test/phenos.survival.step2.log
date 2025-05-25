@@ -1,0 +1,86 @@
+Start time: Tue Apr 29 20:58:43 2025
+
+              |===========================|
+              |      REGENIE v4.1.gz      |
+              |===========================|
+
+Copyright (c) 2020-2024 Joelle Mbatchou, Andrey Ziyatdinov and Jonathan Marchini.
+Distributed under the MIT License.
+Compiled with Boost Iostream library.
+Compiled with HTSlib.
+Using Intel MKL with Eigen.
+
+Log of output saved in file : phenos.survival.step2.log
+
+Options in effect:
+  --step 2 \
+  --out phenos.survival.step2 \
+  --bgen /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.bgen \
+  --sample /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.sample \
+  --ref-first \
+  --phenoFile /mnt/project/WGS_Lucia/Data/phenotypes/phenotypes_all_users_survival_analysis.tsv \
+  --covarFile /mnt/project/WGS_Lucia/Data/Input_regenie/covariates.tsv \
+  --t2e \
+  --phenoColList Available_medication_days,Available_medication_days_to_F_comorbidity \
+  --eventColList Treatment_end,F_comorbidity_event \
+  --pred /mnt/project/WGS_Lucia/Data/Input_regenie/phenos_all_users.survival.step1_pred_new.list \
+  --firth \
+  --approx \
+  --vc-tests skato,acato-full \
+  --bsize 200 \
+  --set-list /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.setlist \
+  --anno-file /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.annotations \
+  --mask-def /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1_morphine.mask \
+  --verbose
+
+Association testing mode (joint tests) with fast multithreading using OpenMP
+ * bgen             : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.bgen]
+   -summary : bgen file (v1.2 layout, zlib compressed) with 431455 named samples and 3401 variants with 8-bit encoding.
+   -sample file: /mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.sample
+ * phenotypes       : [/mnt/project/WGS_Lucia/Data/phenotypes/phenotypes_all_users_survival_analysis.tsv] n_pheno = 2
+   -number of phenotyped individuals  = 89045
+ * covariates       : [/mnt/project/WGS_Lucia/Data/Input_regenie/covariates.tsv] n_cov = 25
+   -number of individuals with covariate data = 426154
+ * number of individuals used in analysis = 88553
+ * number of observations for each trait:
+   - 'Available_medication_days': 87249 events and 1304 censors
+   - 'Available_medication_days_to_F_comorbidity': 5526 events and 83027 censors
+ * LOCO predictions : [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos_all_users.survival.step1_pred_new.list]
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos_all_users.survival.LOCO/phenos_all_users.survival.step1_1.loco] for phenotype 'Available_medication_days'
+   -file [/mnt/project/WGS_Lucia/Data/Input_regenie/phenos_all_users.survival.LOCO/phenos_all_users.survival.step1_3.loco] for phenotype 'Available_medication_days_to_F_comorbidity'
+ * annotations      : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.annotations] 
+   +number of annotations categories = 23
+ * masks            : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1_morphine.mask] n_masks = 4
+ * aaf cutoffs      : [ 2 : 0.01 1 ] + singletons
+ * set file         : [/mnt/project/WGS_Lucia/WGS_QC/Output/OPRM1.setlist] n_sets = 1
+ * # threads        : [15]
+ * # tested sets    : [1]
+ * max block size   : [200]
+ * rule used to build masks : max
+ * computing gene-based tests for each set of variants included in a mask (rho=[0,0.01,0.04,0.09,0.16,0.25,0.5,1])
+  -variants with MAC <= 10 are collapsed into a mask
+  -weights are obtained from Beta(MAF,1,25)
+  -list of gene-based tests run: ACATO,ACATV,SKATO
+ * approximate memory usage : 3GB
+ * using minimum MAC of 5 (masks with lower MAC are ignored)
+ * using fast Firth correction for logistic/cox regression p-values less than 0.05
+
+Chromosome 6 [1 sets in total]
+   -reading loco predictions for the chromosome...done (1657ms) 
+   -fitting null cox regression on time-to-event phenotypes...done (2324ms) 
+   -fitting null Firth cox regression on time-to-event phenotypes...done (123580ms) 
+ set [1/1] : OPRM1 - 222 variants...2 chunks
+     -reading in genotypes, computing gene-based tests and building masks...WARNING: 2/12 masks fail MAC filter and will be skipped...WARNING: error in gene-based tests. Skipping set...done (781ms) 
+     -computing association tests...done (308ms) 
+
+Association results stored separately for each trait in files : 
+* [phenos.survival.step2_Available_medication_days.regenie]
+* [phenos.survival.step2_Available_medication_days_to_F_comorbidity.regenie]
+
+Number of tests with Firth correction : 16
+Number of failed tests : (0/16)
+Number of ignored tests due to low MAC : 0
+
+Elapsed time : 146.056s
+End time: Tue Apr 29 21:01:09 2025
+
