@@ -55,9 +55,28 @@ Phenotypes are formatted for REGENIE:
 
 ## Exploratory Data Analysis (EDA)
 
-The `notebooks/eda/` folder contains supplementary notebooks used to explore and visualize the relationships between genetic variants and prescription patterns, as well as to support phenotype definition and mask construction. These analyses are not strictly required for REGENIE but provide essential context. 
-These notebooks are helpful for:
-- Validating prescription mappings (OMOP-CDM and ATC codes)
-- Visualizing variant–drug overlaps (heatmaps)
-- Selecting ICD-10-based disease subgroups (e.g., musculoskeletal)
-- Supplementing the construction of binary, quantitative, and survival phenotypes
+The `notebooks/eda/` directory includes a set of notebooks used for supporting analyses such as drug formulation classification, disease-variant mapping, phenotype construction, and variant filtering. These analyses are not strictly required for REGENIE but provide essential context.
+
+```text
+notebooks/eda/
+├── drug_disease_matrix/
+│   └── Drug_Disease_Matrix.ipynb
+│       - Links ICD-10 diagnoses from HESIN data to drug exposures to explore disease-drug relationships
+│
+├── drug_formulation_matrix/
+│   ├── drug_form_group.py
+│       - Defines standardized drug formulation groups (e.g., injectable, oral)
+│   └── omop_formulation.ipynb
+│       - Maps drug concept identifiers to ATC codes and formulation types using OMOP vocabularies
+│
+├── drug_variant_matrix/
+│   ├── Drug_Variant_Matrix.ipynb
+│       - Constructs a matrix showing the overlap between individuals carrying OPRM1 variants and those exposed to MOR-interacting drugs
+│   ├── WGS_variants_identification.ipynb
+│       - Identifies, filters, and functionally annotates WGS variants within the OPRM1 locus
+│
+├── co_exposure_switching.ipynb
+│   - Analysis of early co-treatment or switching after codeine/morphine use
+│
+├── target_diseases.ipynb
+│   - Extracts and filters ICD-10-based disease subgroups for subgroup-specific association analysis
