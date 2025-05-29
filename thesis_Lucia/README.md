@@ -75,8 +75,8 @@ notebooks/eda/
 │   ├── WGS_variants_identification.ipynb
 │       - Identifies, filters, and functionally annotates WGS variants within the OPRM1 locus
 │
-├── co_exposure_switching.ipynb
-│   - Analysis of early co-treatment or switching after codeine/morphine use
+├── drug_combinations.ipynb
+│   - Analysis of MOR-interacting drugs combniations
 │
 ├── target_diseases.ipynb
 │   - Extracts and filters ICD-10-based disease subgroups for subgroup-specific association analysis
