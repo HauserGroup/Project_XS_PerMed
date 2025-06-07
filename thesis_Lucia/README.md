@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Author-Lucía%20Sánchez-green)
+![Static Badge](https://img.shields.io/badge/Author-Lucía%20Sánchez%20Schneider-green)
 
 # WGS burden testing framework using UK Biobank data
 
